@@ -232,20 +232,20 @@
             {% endif %}
 
             <div class="flex flex-wrap gap-2">
-                <input type="radio" id="tab-{{ row.month }}-income" name="tab-{{ row.month }}" class="peer/income hidden" checked>
-                <label for="tab-{{ row.month }}-income" class="flex-1 cursor-pointer rounded-full bg-slate-100 py-1.5 text-center text-sm font-semibold text-slate-500 peer-checked/income:bg-indigo-600 peer-checked/income:text-white">수입</label>
-
-                <input type="radio" id="tab-{{ row.month }}-expense" name="tab-{{ row.month }}" class="peer/expense hidden">
+                <input type="radio" id="tab-{{ row.month }}-expense" name="tab-{{ row.month }}" class="peer/expense hidden" checked>
                 <label for="tab-{{ row.month }}-expense" class="flex-1 cursor-pointer rounded-full bg-slate-100 py-1.5 text-center text-sm font-semibold text-slate-500 peer-checked/expense:bg-indigo-600 peer-checked/expense:text-white">지출</label>
+
+                <input type="radio" id="tab-{{ row.month }}-income" name="tab-{{ row.month }}" class="peer/income hidden">
+                <label for="tab-{{ row.month }}-income" class="flex-1 cursor-pointer rounded-full bg-slate-100 py-1.5 text-center text-sm font-semibold text-slate-500 peer-checked/income:bg-indigo-600 peer-checked/income:text-white">수입</label>
 
                 <input type="radio" id="tab-{{ row.month }}-savings" name="tab-{{ row.month }}" class="peer/savings hidden">
                 <label for="tab-{{ row.month }}-savings" class="flex-1 cursor-pointer rounded-full bg-slate-100 py-1.5 text-center text-sm font-semibold text-slate-500 peer-checked/savings:bg-indigo-600 peer-checked/savings:text-white">저축</label>
 
-                <div class="hidden w-full peer-checked/income:block">
-                    {{ render_donut(row.income_slices, "이 달은 수입 내역이 없습니다.") }}
-                </div>
                 <div class="hidden w-full peer-checked/expense:block">
                     {{ render_donut(row.expense_slices, "이 달은 지출 내역이 없습니다.") }}
+                </div>
+                <div class="hidden w-full peer-checked/income:block">
+                    {{ render_donut(row.income_slices, "이 달은 수입 내역이 없습니다.") }}
                 </div>
                 <div class="hidden w-full peer-checked/savings:block">
                     {{ render_donut(row.savings_slices, "이 달은 저축 내역이 없습니다.") }}
