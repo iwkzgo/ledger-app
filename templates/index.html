@@ -225,6 +225,23 @@
     </div>
 </section>
 
+<section class="mb-10">
+    <h2 class="mb-4 text-lg font-bold text-slate-900">지출 내역 다운로드</h2>
+    <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
+        <form action="{{ url_for('ledger.export_csv') }}" method="get" class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <label class="text-sm text-slate-500">월 선택(비우면 전체 기간)</label>
+            <input
+                type="month"
+                name="month"
+                class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            >
+            <button type="submit" class="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
+                📥 CSV 다운로드
+            </button>
+        </form>
+    </div>
+</section>
+
 <section>
     <h2 class="mb-4 text-lg font-bold text-slate-900">최근 입력 내역</h2>
     <div class="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">

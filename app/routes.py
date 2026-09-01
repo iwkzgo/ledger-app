@@ -1,4 +1,8 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+import csv
+import io
+from datetime import datetime
+
+from flask import Blueprint, Response, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from .aggregator import (
@@ -162,6 +166,41 @@ def savings_goal():
     db.session.commit()
     flash(f'{month} 저축 목표를 {amount:,}원으로 설정했습니다.', "success")
     return redirect(url_for("ledger.index"))
+
+
+@bp.route("/export")
+@login_required
+def export_csv():
+    month = request.args.get("month", "").strip() or None
+
+    query = Entry.query.filter_by(user_id=current_user.id)
+    if month:
+        try:
+            year, mon = map(int, month.split("-"))
+            start = datetime(year, mon, 1)
+            end = datetime(year + 1, 1, 1) if mon == 12 else datetime(year, mon + 1, 1)
+            query = query.filter(Entry.created_at >= start, Entry.created_at < end)
+        except ValueError:
+            flash(f'"{month}"은(는) 올바른 월 형식이 아니에요.', "error")
+            return redirect(url_for("ledger.index"))
+
+    entries = query.order_by(Entry.created_at.asc()).all()
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(["날짜", "항목", "금액", "카테고리"])
+    for entry in entries:
+        writer.writerow(
+            [entry.created_at.strftime("%Y-%m-%d"), entry.item, entry.amount, entry.category]
+        )
+
+    filename = f"expenses_{month}.csv" if month else "expenses_all.csv"
+    csv_content = "\ufeff" + buffer.getvalue()  # 엑셀에서 한글이 안 깨지도록 UTF-8 BOM 추가
+    return Response(
+        csv_content,
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
 
 
 @bp.route("/budgets", methods=["GET", "POST"])
