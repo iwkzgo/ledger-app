@@ -18,6 +18,7 @@ from .categorizer import categorize_item, learn_category
 from .extensions import db
 from .models import Budget, Entry, SavingsGoal
 from .recurring import sync_recurring_items
+from .timeutil import to_kst
 from .rules import (
     EXPENSE_CATEGORY_ORDER,
     FALLBACK_CATEGORY,
@@ -237,7 +238,7 @@ def export_csv():
     sheet.append(["날짜", "항목", "금액", "카테고리"])
     for entry in entries:
         sheet.append(
-            [entry.created_at.strftime("%Y-%m-%d"), entry.item, entry.amount, entry.category]
+            [to_kst(entry.created_at).strftime("%Y-%m-%d"), entry.item, entry.amount, entry.category]
         )
     sheet.column_dimensions["A"].width = 12
     sheet.column_dimensions["B"].width = 18

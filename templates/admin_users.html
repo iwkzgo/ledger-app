@@ -19,9 +19,9 @@
             {% for user in users %}
             <tr class="hover:bg-slate-50/60">
                 <td class="px-5 py-3 font-medium text-slate-700">{{ user.username }}</td>
-                <td class="px-5 py-3 text-slate-500">{{ user.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+                <td class="px-5 py-3 text-slate-500">{{ (user.created_at | kst).strftime("%Y-%m-%d %H:%M") }}</td>
                 <td class="px-5 py-3 text-slate-500">
-                    {% if user.last_login_at %}{{ user.last_login_at.strftime("%Y-%m-%d %H:%M") }}{% else %}-{% endif %}
+                    {% if user.last_login_at %}{{ (user.last_login_at | kst).strftime("%Y-%m-%d %H:%M") }}{% else %}-{% endif %}
                 </td>
             </tr>
             {% endfor %}
