@@ -67,3 +67,13 @@ class RecurringItem(db.Model):
     # 같은 달에 다시 만들지 않기 위한 기준으로 씁니다.
     last_recorded_month = db.Column(db.String(7), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+
+
+class SavingsGoal(db.Model):
+    __tablename__ = "savings_goals"
+    __table_args__ = (db.UniqueConstraint("user_id", "month", name="uq_savings_goal_user_month"),)
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    month = db.Column(db.String(7), nullable=False)  # "YYYY-MM"
+    target_amount = db.Column(db.Integer, nullable=False)

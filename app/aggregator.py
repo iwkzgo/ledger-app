@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from .chart import build_pie_slices
-from .models import Budget, Entry
+from .models import Budget, Entry, SavingsGoal
 from .rules import EXPENSE_CATEGORY_ORDER, INCOME_CATEGORY, SAVINGS_CATEGORY
 
 EXPENSE_CATEGORIES = EXPENSE_CATEGORY_ORDER
@@ -54,9 +54,54 @@ def build_monthly_summary(user_id: int) -> List[Dict]:
                 "remaining": data["income"] - data["expense_total"] - data["savings"],
                 "categories": categories,
                 "pie_slices": build_pie_slices(ordered_categories),
+                "savings_goal": build_savings_goal_status(user_id, month),
             }
         )
     return summary
+
+
+def _income_and_expense_for_month(user_id: int, month: str) -> tuple:
+    income = 0
+    expense_total = 0
+    for entry in Entry.query.filter_by(user_id=user_id).all():
+        if entry.created_at.strftime("%Y-%m") != month:
+            continue
+        if entry.category == INCOME_CATEGORY:
+            income += entry.amount
+        elif entry.category == SAVINGS_CATEGORY:
+            continue
+        else:
+            expense_total += entry.amount
+    return income, expense_total
+
+
+def build_savings_goal_status(user_id: int, month: Optional[str] = None) -> Optional[Dict]:
+    """해당 달의 저축 목표 대비 진행률을 계산합니다. 목표가 없으면 None을 반환합니다."""
+    month = month or current_month()
+    goal = SavingsGoal.query.filter_by(user_id=user_id, month=month).first()
+    if goal is None or goal.target_amount <= 0:
+        return None
+
+    income, expense_total = _income_and_expense_for_month(user_id, month)
+    saved = income - expense_total
+    percent = round(saved / goal.target_amount * 100, 1)
+    achieved = saved >= goal.target_amount
+
+    if achieved:
+        level = "achieved"
+    elif saved < 0:
+        level = "negative"
+    else:
+        level = "progress"
+
+    return {
+        "month": month,
+        "target": goal.target_amount,
+        "saved": saved,
+        "percent": percent,
+        "achieved": achieved,
+        "level": level,
+    }
 
 
 def _category_totals_for_month(user_id: int, month: str) -> Dict[str, int]:

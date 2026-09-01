@@ -110,6 +110,53 @@
 </section>
 
 <section class="mb-10">
+    <h2 class="mb-4 text-lg font-bold text-slate-900">이번 달({{ current_month }}) 저축 목표</h2>
+    {% set goal_theme = {
+        'achieved': {'bar': 'bg-emerald-500', 'ring': 'ring-emerald-200', 'badge': 'bg-emerald-50 text-emerald-700', 'label': '🎉 목표 달성!'},
+        'negative': {'bar': 'bg-rose-500', 'ring': 'ring-rose-200', 'badge': 'bg-rose-50 text-rose-700', 'label': '적자'},
+        'progress': {'bar': 'bg-indigo-500', 'ring': 'ring-indigo-100', 'badge': 'bg-indigo-50 text-indigo-700', 'label': '진행 중'},
+    } %}
+    <div class="rounded-2xl bg-white p-5 sm:p-6 shadow-sm ring-1 {{ goal_theme[savings_goal.level].ring if savings_goal else 'ring-slate-100' }}">
+        {% if savings_goal %}
+        {% set theme = goal_theme[savings_goal.level] %}
+        <div class="mb-3 flex items-center justify-between">
+            <span class="font-semibold text-slate-800">목표 {{ "{:,}".format(savings_goal.target) }}원</span>
+            <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold {{ theme.badge }}">{{ theme.label }}</span>
+        </div>
+        <div class="mb-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+            <div class="h-full rounded-full {{ theme.bar }}" style="width: {{ [[savings_goal.percent, 0] | max, 100] | min }}%;"></div>
+        </div>
+        <div class="flex items-baseline justify-between text-sm">
+            <span class="text-slate-500">{{ "{:,}".format(savings_goal.saved) }}원 저축</span>
+            <span class="font-semibold text-slate-700">{{ savings_goal.percent }}%</span>
+        </div>
+        {% else %}
+        <p class="mb-4 text-sm text-slate-500">이번 달 저축 목표가 설정되어 있지 않습니다.</p>
+        {% endif %}
+
+        <form action="{{ url_for('ledger.savings_goal') }}" method="post" class="mt-4 flex flex-col gap-3 sm:flex-row">
+            <input
+                type="month"
+                name="month"
+                value="{{ current_month }}"
+                class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            >
+            <input
+                type="text"
+                name="target_amount"
+                inputmode="decimal"
+                placeholder="예: 20만원"
+                value="{{ savings_goal.target if savings_goal else '' }}"
+                class="flex-1 rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            >
+            <button type="submit" class="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
+                목표 저장
+            </button>
+        </form>
+    </div>
+</section>
+
+<section class="mb-10">
     <h2 class="mb-4 text-lg font-bold text-slate-900">월별 리포트</h2>
     <div class="space-y-6">
         {% for row in summary|reverse %}
@@ -123,6 +170,20 @@
                     <span class="rounded-full px-3 py-1 {{ 'bg-rose-50 text-rose-700' if row.remaining < 0 else 'bg-emerald-50 text-emerald-700' }}">남은 금액 {{ "{:,}".format(row.remaining) }}원</span>
                 </div>
             </div>
+
+            {% if row.savings_goal %}
+            {% set theme = goal_theme[row.savings_goal.level] %}
+            <div class="mb-5 rounded-xl bg-slate-50 p-3">
+                <div class="mb-1.5 flex items-center justify-between text-xs">
+                    <span class="font-semibold text-slate-600">저축 목표 {{ "{:,}".format(row.savings_goal.target) }}원</span>
+                    <span class="rounded-full px-2 py-0.5 font-semibold {{ theme.badge }}">{{ theme.label }}</span>
+                </div>
+                <div class="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                    <div class="h-full rounded-full {{ theme.bar }}" style="width: {{ [[row.savings_goal.percent, 0] | max, 100] | min }}%;"></div>
+                </div>
+                <div class="mt-1 text-xs text-slate-500">{{ "{:,}".format(row.savings_goal.saved) }}원 저축 · {{ row.savings_goal.percent }}%</div>
+            </div>
+            {% endif %}
 
             {% if row.pie_slices %}
             <div class="flex flex-col items-center gap-6 sm:flex-row sm:items-start">

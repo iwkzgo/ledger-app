@@ -5,11 +5,12 @@ from .aggregator import (
     EXPENSE_CATEGORIES,
     build_budget_status,
     build_monthly_summary,
+    build_savings_goal_status,
     current_month,
 )
 from .categorizer import categorize_item, learn_category
 from .extensions import db
-from .models import Budget, Entry
+from .models import Budget, Entry, SavingsGoal
 from .recurring import sync_recurring_items
 from .rules import (
     EXPENSE_CATEGORY_ORDER,
@@ -68,6 +69,7 @@ def index():
         category_choices=CATEGORY_CHOICES,
         budget_status=build_budget_status(current_user.id),
         current_month=current_month(),
+        savings_goal=build_savings_goal_status(current_user.id, current_month()),
     )
 
 
@@ -143,6 +145,22 @@ def update_entry_category(entry_id):
     db.session.commit()
     learn_category(entry.item, category, current_user.id)
     flash(f'카테고리를 "{category}"(으)로 수정했습니다.', "info")
+    return redirect(url_for("ledger.index"))
+
+
+@bp.route("/savings-goal", methods=["POST"])
+@login_required
+def savings_goal():
+    month = request.form.get("month", "").strip() or current_month()
+    amount = parse_amount(request.form.get("target_amount", "").strip()) or 0
+
+    goal = SavingsGoal.query.filter_by(user_id=current_user.id, month=month).first()
+    if goal is None:
+        db.session.add(SavingsGoal(user_id=current_user.id, month=month, target_amount=amount))
+    else:
+        goal.target_amount = amount
+    db.session.commit()
+    flash(f'{month} 저축 목표를 {amount:,}원으로 설정했습니다.', "success")
     return redirect(url_for("ledger.index"))
 
 
