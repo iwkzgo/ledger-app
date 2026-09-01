@@ -1,5 +1,5 @@
 services:
-  - name: ledger-app
+  - name: inkyuledger
     type: web
     runtime: python
     plan: free
