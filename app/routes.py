@@ -191,15 +191,20 @@ def export_csv():
     entries = query.order_by(Entry.created_at.asc()).all()
 
     workbook = Workbook()
-    data_sheet = workbook.active
-    data_sheet.title = "거래내역"
-    data_sheet.append(["날짜", "항목", "금액", "카테고리"])
+    sheet = workbook.active
+    sheet.title = "가계부"
+    sheet.append(["날짜", "항목", "금액", "카테고리"])
     for entry in entries:
-        data_sheet.append(
+        sheet.append(
             [entry.created_at.strftime("%Y-%m-%d"), entry.item, entry.amount, entry.category]
         )
+    sheet.column_dimensions["A"].width = 12
+    sheet.column_dimensions["B"].width = 18
+    sheet.column_dimensions["C"].width = 12
+    sheet.column_dimensions["D"].width = 12
 
-    # 지출 카테고리별 합계 (수입/저축 제외) - 원형 그래프의 재료가 되는 표
+    # 지출 카테고리별 합계 (수입/저축 제외) - 원형 그래프의 재료가 되는 표.
+    # F, G열에 같은 시트 안에 넣어서 거래내역과 한 화면에서 같이 보이게 합니다.
     category_totals = {}
     for entry in entries:
         if entry.category in (INCOME_CATEGORY, SAVINGS_CATEGORY):
@@ -207,21 +212,26 @@ def export_csv():
         category_totals[entry.category] = category_totals.get(entry.category, 0) + entry.amount
 
     if category_totals:
-        summary_sheet = workbook.create_sheet("카테고리별 요약")
-        summary_sheet.append(["카테고리", "합계"])
-        for category, total in category_totals.items():
-            summary_sheet.append([category, total])
+        sheet["F1"] = "카테고리"
+        sheet["G1"] = "합계"
+        sheet.column_dimensions["F"].width = 12
+        sheet.column_dimensions["G"].width = 12
+        for offset, (category, total) in enumerate(category_totals.items()):
+            row = offset + 2
+            sheet.cell(row=row, column=6, value=category)
+            sheet.cell(row=row, column=7, value=total)
 
         chart = PieChart()
         chart.title = "카테고리별 지출 비율"
+        chart.title.overlay = False  # 제목이 도넛과 겹치지 않도록 별도 공간 확보
         row_count = len(category_totals)
-        data_ref = Reference(summary_sheet, min_col=2, min_row=1, max_row=row_count + 1)
-        labels_ref = Reference(summary_sheet, min_col=1, min_row=2, max_row=row_count + 1)
+        data_ref = Reference(sheet, min_col=7, min_row=1, max_row=row_count + 1)
+        labels_ref = Reference(sheet, min_col=6, min_row=2, max_row=row_count + 1)
         chart.add_data(data_ref, titles_from_data=True)
         chart.set_categories(labels_ref)
         chart.width = 14
         chart.height = 10
-        summary_sheet.add_chart(chart, "D2")
+        sheet.add_chart(chart, "I2")
 
     buffer = io.BytesIO()
     workbook.save(buffer)
