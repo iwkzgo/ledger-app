@@ -1,6 +1,7 @@
 import csv
 import io
 from datetime import datetime
+from urllib.parse import quote
 
 from flask import Blueprint, Response, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -174,12 +175,14 @@ def export_csv():
     month = request.args.get("month", "").strip() or None
 
     query = Entry.query.filter_by(user_id=current_user.id)
+    filename = "전체_가계부.csv"
     if month:
         try:
             year, mon = map(int, month.split("-"))
             start = datetime(year, mon, 1)
             end = datetime(year + 1, 1, 1) if mon == 12 else datetime(year, mon + 1, 1)
             query = query.filter(Entry.created_at >= start, Entry.created_at < end)
+            filename = f"{year}년_{mon}월_가계부.csv"
         except ValueError:
             flash(f'"{month}"은(는) 올바른 월 형식이 아니에요.', "error")
             return redirect(url_for("ledger.index"))
@@ -193,13 +196,17 @@ def export_csv():
         writer.writerow(
             [entry.created_at.strftime("%Y-%m-%d"), entry.item, entry.amount, entry.category]
         )
-
-    filename = f"expenses_{month}.csv" if month else "expenses_all.csv"
     csv_content = "\ufeff" + buffer.getvalue()  # 엑셀에서 한글이 안 깨지도록 UTF-8 BOM 추가
+    # 한글 파일명이 깨지지 않도록 RFC 5987 형식(filename*)을 같이 내려줍니다.
+    encoded_filename = quote(filename)
     return Response(
         csv_content,
         mimetype="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={filename}"},
+        headers={
+            "Content-Disposition": (
+                f"attachment; filename=ledger.csv; filename*=UTF-8''{encoded_filename}"
+            )
+        },
     )
 
 
