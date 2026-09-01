@@ -6,9 +6,14 @@
         <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">🧾 자동 가계부</h1>
         <p class="mt-1 text-sm text-slate-500">"스벅 5천원", "버스 1400원", "용돈 10만원"처럼 입력하면 자동으로 분류돼요.</p>
     </div>
-    <a href="{{ url_for('ledger.budgets_page') }}" class="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
-        💰 예산 설정
-    </a>
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ url_for('recurring.index') }}" class="inline-flex items-center gap-1 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 transition">
+            🔁 고정지출 관리
+        </a>
+        <a href="{{ url_for('ledger.budgets_page') }}" class="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
+            💰 예산 설정
+        </a>
+    </div>
 </header>
 
 {% with messages = get_flashed_messages(with_categories=true) %}

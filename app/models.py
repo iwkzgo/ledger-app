@@ -53,3 +53,17 @@ class LearnedCategory(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     item_key = db.Column(db.String(255), nullable=False)
     category = db.Column(db.String(50), nullable=False)
+
+
+class RecurringItem(db.Model):
+    __tablename__ = "recurring_items"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    item = db.Column(db.String(255), nullable=False)
+    amount = db.Column(db.Integer, nullable=False)
+    day_of_month = db.Column(db.Integer, nullable=False)
+    # 마지막으로 자동 기록한 달 ("YYYY-MM"). 중복 기록을 막고, 사용자가 지운 자동 기록을
+    # 같은 달에 다시 만들지 않기 위한 기준으로 씁니다.
+    last_recorded_month = db.Column(db.String(7), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)

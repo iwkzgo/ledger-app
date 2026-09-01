@@ -10,9 +10,11 @@ from .aggregator import (
 from .categorizer import categorize_item, learn_category
 from .extensions import db
 from .models import Budget, Entry
+from .recurring import sync_recurring_items
 from .rules import (
     EXPENSE_CATEGORY_ORDER,
     FALLBACK_CATEGORY,
+    FIXED_EXPENSE_CATEGORY,
     INCOME_CATEGORY,
     SAVINGS_CATEGORY,
 )
@@ -47,6 +49,11 @@ def flash_budget_warning(category: str) -> None:
 @bp.route("/")
 @login_required
 def index():
+    recorded = sync_recurring_items(current_user.id)
+    if recorded:
+        flash("고정지출이 자동 기록되었습니다: " + ", ".join(recorded), "info")
+        flash_budget_warning(FIXED_EXPENSE_CATEGORY)
+
     recent_entries = (
         Entry.query.filter_by(user_id=current_user.id)
         .order_by(Entry.id.desc())

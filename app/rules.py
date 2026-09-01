@@ -2,6 +2,7 @@ FALLBACK_CATEGORY = "기타"
 INCOME_CATEGORY = "수입"
 SAVINGS_CATEGORY = "저축"
 DATE_CATEGORY = "데이트"
+FIXED_EXPENSE_CATEGORY = "고정지출"
 
 # 항목명에 이 키워드가 포함되면 지출 카테고리보다 먼저 수입으로 분류합니다.
 INCOME_KEYWORDS = [
@@ -48,7 +49,7 @@ CATEGORY_RULES = {
         "교보문고", "올리브영", "팝마트", "이마트", "홈플러스", "롯데마트",
         "백화점", "유니클로", "자라", "네이버파이낸셜",
     ],
-    "고정지출": [
+    FIXED_EXPENSE_CATEGORY: [
         "SKT", "KT", "LG유플러스", "통신비", "보험", "관리비", "월세",
         "도시가스", "전기요금", "수도요금", "정수기", "구독료", "Apple",
     ],
@@ -57,5 +58,5 @@ CATEGORY_RULES = {
 # 화면에 표시할 지출 카테고리 순서 (데이트는 키워드로 먼저 판별되어 CATEGORY_RULES엔 없지만
 # 표/그래프에는 이 위치에 나와야 하므로 별도로 순서를 정의합니다.)
 EXPENSE_CATEGORY_ORDER = [
-    "식비", "카페", "교통", "여가", DATE_CATEGORY, "쇼핑", "고정지출", FALLBACK_CATEGORY,
+    "식비", "카페", "교통", "여가", DATE_CATEGORY, "쇼핑", FIXED_EXPENSE_CATEGORY, FALLBACK_CATEGORY,
 ]
