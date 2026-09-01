@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from .chart import build_pie_slices
+from .chart import build_donut_segments
 from .models import Budget, Entry, SavingsGoal
 from .rules import EXPENSE_CATEGORY_ORDER, INCOME_CATEGORY, SAVINGS_CATEGORY
 
@@ -45,6 +45,15 @@ def build_monthly_summary(user_id: int) -> List[Dict]:
             for category in EXPENSE_CATEGORY_ORDER
             if category in categories
         }
+        income_breakdown = {
+            item["item"]: item["amount"]
+            for item in build_category_breakdown(user_id, INCOME_CATEGORY, month)
+        }
+        savings_breakdown = {
+            item["item"]: item["amount"]
+            for item in build_category_breakdown(user_id, SAVINGS_CATEGORY, month)
+        }
+
         summary.append(
             {
                 "month": month,
@@ -53,7 +62,9 @@ def build_monthly_summary(user_id: int) -> List[Dict]:
                 "expense_total": data["expense_total"],
                 "remaining": data["income"] - data["expense_total"] - data["savings"],
                 "categories": categories,
-                "pie_slices": build_pie_slices(ordered_categories),
+                "income_slices": build_donut_segments(income_breakdown),
+                "expense_slices": build_donut_segments(ordered_categories),
+                "savings_slices": build_donut_segments(savings_breakdown),
                 "savings_goal": build_savings_goal_status(user_id, month),
             }
         )
