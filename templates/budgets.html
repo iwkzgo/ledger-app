@@ -23,7 +23,7 @@
     {% endif %}
 {% endwith %}
 
-<form action="{{ url_for('budgets_page') }}" method="post" class="space-y-6">
+<form action="{{ url_for('ledger.budgets_page') }}" method="post" class="space-y-6">
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {% for category in categories %}
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
@@ -45,6 +45,6 @@
 </form>
 
 <p class="mt-6">
-    <a href="{{ url_for('index') }}" class="text-sm font-semibold text-indigo-600 hover:underline">← 가계부로 돌아가기</a>
+    <a href="{{ url_for('ledger.index') }}" class="text-sm font-semibold text-indigo-600 hover:underline">← 가계부로 돌아가기</a>
 </p>
 {% endblock %}

@@ -9,6 +9,14 @@
 <body class="min-h-screen bg-white text-slate-800 antialiased">
 <div class="fixed inset-0 -z-10 bg-gradient-to-b from-indigo-100 via-white to-white"></div>
 <div class="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-10">
+    {% if current_user.is_authenticated %}
+    <div class="mb-4 flex items-center justify-end gap-3 text-sm">
+        <span class="text-slate-500">{{ current_user.username }}님</span>
+        <form action="{{ url_for('auth.logout') }}" method="post">
+            <button type="submit" class="font-semibold text-slate-500 hover:text-rose-600">로그아웃</button>
+        </form>
+    </div>
+    {% endif %}
     {% block content %}{% endblock %}
 </div>
 </body>
