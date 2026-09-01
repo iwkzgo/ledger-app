@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 ledger.db
 .DS_Store
+.env
