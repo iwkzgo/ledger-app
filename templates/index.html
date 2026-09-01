@@ -113,7 +113,6 @@
     <h2 class="mb-4 text-lg font-bold text-slate-900">이번 달({{ current_month }}) 저축 목표</h2>
     {% set goal_theme = {
         'achieved': {'bar': 'bg-emerald-500', 'ring': 'ring-emerald-200', 'badge': 'bg-emerald-50 text-emerald-700', 'label': '🎉 목표 달성!'},
-        'negative': {'bar': 'bg-rose-500', 'ring': 'ring-rose-200', 'badge': 'bg-rose-50 text-rose-700', 'label': '적자'},
         'progress': {'bar': 'bg-indigo-500', 'ring': 'ring-indigo-100', 'badge': 'bg-indigo-50 text-indigo-700', 'label': '진행 중'},
     } %}
     <div class="rounded-2xl bg-white p-5 sm:p-6 shadow-sm ring-1 {{ goal_theme[savings_goal.level].ring if savings_goal else 'ring-slate-100' }}">
