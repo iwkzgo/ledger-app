@@ -14,7 +14,7 @@ from app.rules import (
     INCOME_CATEGORY,
     SAVINGS_CATEGORY,
 )
-from app.text_parser import parse_entry
+from app.text_parser import parse_amount, parse_entry
 
 app = Flask(__name__)
 app.secret_key = "local-dev-only"
@@ -121,7 +121,7 @@ def budgets_page():
     if request.method == "POST":
         for category in EXPENSE_CATEGORY_ORDER:
             raw_value = request.form.get(f"budget__{category}", "").strip()
-            amount = int(raw_value) if raw_value.isdigit() else 0
+            amount = parse_amount(raw_value) or 0
             db.set_budget(category, amount)
         flash("예산을 저장했습니다.", "success")
         return redirect(url_for("budgets_page"))

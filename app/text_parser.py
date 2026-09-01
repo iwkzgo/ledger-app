@@ -16,38 +16,51 @@ def _sum_korean_units(chunk: str) -> int:
     return total
 
 
-def _split_around(text: str, start: int, end: int) -> str:
-    return (text[:start] + text[end:]).strip()
-
-
-def parse_entry(raw_text: str) -> Optional[Tuple[str, int]]:
-    """자유 텍스트에서 (항목, 금액)을 추출합니다. 금액을 찾지 못하면 None을 반환합니다."""
-    text = raw_text.strip()
-    if not text:
-        return None
-
+def _find_amount(text: str) -> Optional[Tuple[int, int, int]]:
+    """텍스트에서 금액을 찾아 (금액, 시작 위치, 끝 위치)를 반환합니다. 못 찾으면 None."""
     # 1) 한글 단위 표현: "5천원", "3만원", "1만5천원"
     match = _UNIT_AMOUNT_RE.search(text)
     if match:
         amount = _sum_korean_units(match.group(1))
-        item = _split_around(text, match.start(), match.end())
-        if item and amount > 0:
-            return item, amount
+        if amount > 0:
+            return amount, match.start(), match.end()
 
     # 2) 순수 숫자 표현: "1400원", "12,000원"
     match = _PLAIN_AMOUNT_RE.search(text)
     if match:
         amount = int(match.group(1).replace(",", ""))
-        item = _split_around(text, match.start(), match.end())
-        if item:
-            return item, amount
+        return amount, match.start(), match.end()
 
     # 3) "원" 없이 끝자리 숫자만 있는 경우: "버스 1400"
     match = _TRAILING_DIGITS_RE.search(text)
     if match:
         amount = int(match.group(1))
-        item = text[: match.start()].strip()
-        if item:
-            return item, amount
+        return amount, match.start(), match.end()
 
     return None
+
+
+def parse_amount(text: str) -> Optional[int]:
+    """텍스트에서 금액만 추출합니다. 예산 입력처럼 항목명이 필요 없을 때 사용합니다."""
+    text = text.strip()
+    if not text:
+        return None
+    found = _find_amount(text)
+    return found[0] if found else None
+
+
+def parse_entry(raw_text: str) -> Optional[Tuple[str, int]]:
+    """자유 텍스트에서 (항목, 금액)을 추출합니다. 항목 또는 금액을 찾지 못하면 None을 반환합니다."""
+    text = raw_text.strip()
+    if not text:
+        return None
+
+    found = _find_amount(text)
+    if found is None:
+        return None
+
+    amount, start, end = found
+    item = (text[:start] + text[end:]).strip()
+    if not item:
+        return None
+    return item, amount
