@@ -35,7 +35,7 @@
     {% endif %}
 {% endwith %}
 
-<section class="sticky top-0 z-20 mb-10 rounded-2xl bg-white p-5 shadow-md ring-1 ring-slate-100 sm:p-6">
+<section class="mb-10 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 sm:p-6">
     <form action="{{ url_for('ledger.create_entry') }}" method="post" class="flex flex-col gap-3 sm:flex-row">
         <input
             type="text"
