@@ -16,4 +16,3 @@ services:
 databases:
   - name: ledger-db
     plan: free
-    diskSizeGB: 1
