@@ -1,10 +1,11 @@
-import csv
 import io
 from datetime import datetime
 from urllib.parse import quote
 
 from flask import Blueprint, Response, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
+from openpyxl import Workbook
+from openpyxl.chart import PieChart, Reference
 
 from .aggregator import (
     EXPENSE_CATEGORIES,
@@ -175,36 +176,65 @@ def export_csv():
     month = request.args.get("month", "").strip() or None
 
     query = Entry.query.filter_by(user_id=current_user.id)
-    filename = "전체_가계부.csv"
+    filename = "전체_가계부.xlsx"
     if month:
         try:
             year, mon = map(int, month.split("-"))
             start = datetime(year, mon, 1)
             end = datetime(year + 1, 1, 1) if mon == 12 else datetime(year, mon + 1, 1)
             query = query.filter(Entry.created_at >= start, Entry.created_at < end)
-            filename = f"{year}년_{mon}월_가계부.csv"
+            filename = f"{year}년_{mon}월_가계부.xlsx"
         except ValueError:
             flash(f'"{month}"은(는) 올바른 월 형식이 아니에요.', "error")
             return redirect(url_for("ledger.index"))
 
     entries = query.order_by(Entry.created_at.asc()).all()
 
-    buffer = io.StringIO()
-    writer = csv.writer(buffer)
-    writer.writerow(["날짜", "항목", "금액", "카테고리"])
+    workbook = Workbook()
+    data_sheet = workbook.active
+    data_sheet.title = "거래내역"
+    data_sheet.append(["날짜", "항목", "금액", "카테고리"])
     for entry in entries:
-        writer.writerow(
+        data_sheet.append(
             [entry.created_at.strftime("%Y-%m-%d"), entry.item, entry.amount, entry.category]
         )
-    csv_content = "\ufeff" + buffer.getvalue()  # 엑셀에서 한글이 안 깨지도록 UTF-8 BOM 추가
+
+    # 지출 카테고리별 합계 (수입/저축 제외) - 원형 그래프의 재료가 되는 표
+    category_totals = {}
+    for entry in entries:
+        if entry.category in (INCOME_CATEGORY, SAVINGS_CATEGORY):
+            continue
+        category_totals[entry.category] = category_totals.get(entry.category, 0) + entry.amount
+
+    if category_totals:
+        summary_sheet = workbook.create_sheet("카테고리별 요약")
+        summary_sheet.append(["카테고리", "합계"])
+        for category, total in category_totals.items():
+            summary_sheet.append([category, total])
+
+        chart = PieChart()
+        chart.title = "카테고리별 지출 비율"
+        row_count = len(category_totals)
+        data_ref = Reference(summary_sheet, min_col=2, min_row=1, max_row=row_count + 1)
+        labels_ref = Reference(summary_sheet, min_col=1, min_row=2, max_row=row_count + 1)
+        chart.add_data(data_ref, titles_from_data=True)
+        chart.set_categories(labels_ref)
+        chart.width = 14
+        chart.height = 10
+        summary_sheet.add_chart(chart, "D2")
+
+    buffer = io.BytesIO()
+    workbook.save(buffer)
+    buffer.seek(0)
+
     # 한글 파일명이 깨지지 않도록 RFC 5987 형식(filename*)을 같이 내려줍니다.
     encoded_filename = quote(filename)
     return Response(
-        csv_content,
-        mimetype="text/csv",
+        buffer.getvalue(),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
             "Content-Disposition": (
-                f"attachment; filename=ledger.csv; filename*=UTF-8''{encoded_filename}"
+                f"attachment; filename=ledger.xlsx; filename*=UTF-8''{encoded_filename}"
             )
         },
     )
