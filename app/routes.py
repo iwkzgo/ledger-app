@@ -154,6 +154,47 @@ def update_entry_category(entry_id):
     return redirect(url_for("ledger.index"))
 
 
+@bp.route("/entry/<int:entry_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_entry(entry_id):
+    entry = Entry.query.filter_by(id=entry_id, user_id=current_user.id).first_or_404()
+    next_url = request.values.get("next") or url_for("ledger.index")
+    if not next_url.startswith("/"):
+        next_url = url_for("ledger.index")
+
+    if request.method == "POST":
+        item = request.form.get("item", "").strip()
+        amount_raw = request.form.get("amount", "").strip()
+        try:
+            amount = int(amount_raw)
+        except ValueError:
+            amount = None
+
+        if not item or not amount or amount <= 0:
+            flash("항목과 금액을 올바르게 입력해주세요.", "error")
+            return render_template(
+                "edit_entry.html",
+                entry=entry,
+                next_url=next_url,
+                form_item=item,
+                form_amount=amount_raw,
+            )
+
+        entry.item = item
+        entry.amount = amount
+        db.session.commit()
+        flash(f'수정했습니다: {item} · {amount:,}원', "success")
+        return redirect(next_url)
+
+    return render_template(
+        "edit_entry.html",
+        entry=entry,
+        next_url=next_url,
+        form_item=entry.item,
+        form_amount=entry.amount,
+    )
+
+
 @bp.route("/savings-goal", methods=["POST"])
 @login_required
 def savings_goal():

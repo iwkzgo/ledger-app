@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}항목 수정{% endblock %}
+{% block content %}
+<header class="mb-8">
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">✏️ 항목 수정</h1>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% set flash_styles = {
+        'success': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        'info': 'bg-blue-50 text-blue-700 border-blue-200',
+        'warning': 'bg-amber-50 text-amber-700 border-amber-200',
+        'danger': 'bg-rose-50 text-rose-700 border-rose-200',
+        'error': 'bg-rose-50 text-rose-700 border-rose-200',
+    } %}
+    <div class="mb-6 space-y-2">
+        {% for category, message in messages %}
+        <div class="rounded-xl border px-4 py-3 text-sm font-medium {{ flash_styles.get(category, 'bg-slate-50 text-slate-700 border-slate-200') }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}
+
+<section class="rounded-2xl bg-white p-5 sm:p-6 shadow-sm ring-1 ring-slate-100">
+    <form action="{{ url_for('ledger.edit_entry', entry_id=entry.id) }}" method="post" class="flex flex-col gap-4">
+        <input type="hidden" name="next" value="{{ next_url }}">
+        <div>
+            <label class="mb-1 block text-sm font-semibold text-slate-600">항목</label>
+            <input
+                type="text"
+                name="item"
+                value="{{ form_item }}"
+                required
+                class="w-full min-h-[3rem] rounded-xl border border-slate-200 px-4 py-3 text-base focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            >
+        </div>
+        <div>
+            <label class="mb-1 block text-sm font-semibold text-slate-600">금액(원)</label>
+            <input
+                type="number"
+                name="amount"
+                value="{{ form_amount }}"
+                min="1"
+                required
+                class="w-full min-h-[3rem] rounded-xl border border-slate-200 px-4 py-3 text-base focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            >
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" class="min-h-[3rem] flex-1 rounded-xl bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:bg-indigo-800">
+                저장
+            </button>
+            <a href="{{ next_url }}" class="min-h-[3rem] inline-flex flex-1 items-center justify-center rounded-xl bg-slate-100 px-6 py-3 text-base font-semibold text-slate-600 hover:bg-slate-200 transition">
+                취소
+            </a>
+        </div>
+    </form>
+</section>
+{% endblock %}
