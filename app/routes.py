@@ -250,6 +250,44 @@ def export_csv():
     )
 
 
+@bp.route("/entries")
+@login_required
+def entries_page():
+    q = request.args.get("q", "").strip()
+    category = request.args.get("category", "").strip()
+    month = request.args.get("month", "").strip()
+    page = request.args.get("page", 1, type=int) or 1
+
+    query = Entry.query.filter_by(user_id=current_user.id)
+    if q:
+        query = query.filter(Entry.item.ilike(f"%{q}%"))
+    if category:
+        query = query.filter(Entry.category == category)
+    if month:
+        try:
+            year, mon = map(int, month.split("-"))
+            start = datetime(year, mon, 1)
+            end = datetime(year + 1, 1, 1) if mon == 12 else datetime(year, mon + 1, 1)
+            query = query.filter(Entry.created_at >= start, Entry.created_at < end)
+        except ValueError:
+            flash(f'"{month}"은(는) 올바른 월 형식이 아니에요.', "error")
+            month = ""
+
+    pagination = query.order_by(Entry.created_at.desc()).paginate(
+        page=page, per_page=30, error_out=False
+    )
+
+    return render_template(
+        "entries.html",
+        pagination=pagination,
+        entries=pagination.items,
+        category_choices=CATEGORY_CHOICES,
+        q=q,
+        selected_category=category,
+        month=month,
+    )
+
+
 @bp.route("/budgets", methods=["GET", "POST"])
 @login_required
 def budgets_page():

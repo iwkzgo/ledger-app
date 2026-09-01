@@ -275,7 +275,10 @@
 </section>
 
 <section>
-    <h2 class="mb-4 text-lg font-bold text-slate-900">최근 입력 내역</h2>
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h2 class="text-lg font-bold text-slate-900">최근 입력 내역</h2>
+        <a href="{{ url_for('ledger.entries_page') }}" class="text-sm font-semibold text-indigo-600 hover:underline">📋 전체 내역 보기 →</a>
+    </div>
     <div class="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
         <table class="w-full min-w-[640px] text-sm">
             <thead>
