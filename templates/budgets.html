@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>카테고리별 월 예산 설정</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h1>카테고리별 월 예산 설정</h1>
+    <p>카테고리마다 한 달 예산을 정해두면, 지출이 80%를 넘으면 주의 알림을, 100%를 넘으면 초과 알림을 보여줍니다. 0으로 두거나 비워두면 그 카테고리는 예산 관리 대상에서 빠집니다.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="flash">
+                {% for category, message in messages %}
+                    <li class="flash-{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('budgets_page') }}" method="post">
+        <table>
+            <thead>
+                <tr>
+                    <th>카테고리</th>
+                    <th>월 예산 (원)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr>
+                    <td>{{ category }}</td>
+                    <td>
+                        <input
+                            type="number"
+                            min="0"
+                            step="1000"
+                            name="budget__{{ category }}"
+                            value="{{ budgets.get(category, 0) }}"
+                        >
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit">저장</button>
+    </form>
+
+    <p><a href="{{ url_for('index') }}">← 가계부로 돌아가기</a></p>
+</div>
+</body>
+</html>

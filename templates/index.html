@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>자동 가계부</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h1>자동 가계부</h1>
+    <p>"스벅 5천원", "버스 1400원", "용돈 10만원" 처럼 입력하면 자동으로 금액/항목을 분리하고 카테고리를 분류해서 저장합니다.</p>
+    <p><a href="{{ url_for('budgets_page') }}">카테고리별 월 예산 설정 →</a></p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="flash">
+                {% for category, message in messages %}
+                    <li class="flash-{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('create_entry') }}" method="post">
+        <input type="text" name="raw_text" placeholder="예: 스벅 5천원" autofocus required>
+        <button type="submit">저장</button>
+    </form>
+
+    <h1>이번 달({{ current_month }}) 예산 현황</h1>
+    {% if budget_status %}
+    <ul class="budget-list">
+        {% for status in budget_status %}
+        <li class="budget-item budget-{{ status.level }}">
+            <span class="budget-label">{{ status.category }}</span>
+            <div class="budget-bar">
+                <div class="budget-bar-fill" style="width: {{ [status.percent, 100] | min }}%;"></div>
+            </div>
+            <span class="budget-figure">{{ "{:,}".format(status.spent) }}원 / {{ "{:,}".format(status.budget) }}원 ({{ status.percent }}%)</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty">설정된 예산이 없습니다. <a href="{{ url_for('budgets_page') }}">예산을 설정</a>해보세요.</p>
+    {% endif %}
+
+    <div class="dashboard">
+        <div class="dashboard-tables">
+            <h1>월별 수입 / 지출 / 저축 요약</h1>
+            <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>월</th>
+                        <th>수입</th>
+                        <th>지출</th>
+                        <th>저축</th>
+                        <th>남은 금액</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in summary %}
+                    <tr>
+                        <td>{{ row.month }}</td>
+                        <td>{{ "{:,}".format(row.income) }}원</td>
+                        <td>{{ "{:,}".format(row.expense_total) }}원</td>
+                        <td>{{ "{:,}".format(row.savings) }}원</td>
+                        <td class="{{ 'neg' if row.remaining < 0 else '' }}">{{ "{:,}".format(row.remaining) }}원</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+
+            <h1>월별 카테고리별 지출</h1>
+            <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>월</th>
+                        {% for category in categories %}
+                        <th>{{ category }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in summary %}
+                    <tr>
+                        <td>{{ row.month }}</td>
+                        {% for category in categories %}
+                        <td>{{ "{:,}".format(row.categories.get(category, 0)) }}원</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+
+        <div class="dashboard-pies">
+            <h1>월별 지출 카테고리 비율</h1>
+            <div class="pie-grid">
+                {% for row in summary %}
+                <div class="pie-card">
+                    <h3>{{ row.month }}</h3>
+                    {% if row.pie_slices %}
+                    <svg width="160" height="160" viewBox="0 0 160 160">
+                        {% for slice in row.pie_slices %}
+                        <path d="{{ slice.path }}" fill="{{ slice.color }}"><title>{{ slice.category }} {{ slice.percent }}%</title></path>
+                        {% endfor %}
+                    </svg>
+                    <ul class="legend">
+                        {% for slice in row.pie_slices %}
+                        <li><span class="swatch" style="background:{{ slice.color }}"></span>{{ slice.category }} {{ slice.percent }}%</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="empty">지출 내역 없음</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <h1>최근 입력 내역</h1>
+    <div class="table-scroll">
+    <table>
+        <thead>
+            <tr>
+                <th>시각</th>
+                <th>항목</th>
+                <th>금액</th>
+                <th>카테고리</th>
+                <th>삭제</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in recent_entries %}
+            <tr>
+                <td>{{ entry.created_at }}</td>
+                <td>{{ entry.item }}</td>
+                <td>{{ "{:,}".format(entry.amount) }}원</td>
+                <td>
+                    <form action="{{ url_for('update_entry_category', entry_id=entry.id) }}" method="post" class="inline-form">
+                        <select name="category" onchange="this.form.submit()">
+                            {% for category in category_choices %}
+                            <option value="{{ category }}" {% if category == entry.category %}selected{% endif %}>{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </td>
+                <td>
+                    <form action="{{ url_for('delete_entry', entry_id=entry.id) }}" method="post" class="inline-form">
+                        <button type="submit" class="btn-delete">삭제</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+</body>
+</html>
