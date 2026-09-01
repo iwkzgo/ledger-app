@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}가입자 목록{% endblock %}
+{% block content %}
+<header class="mb-8">
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">👤 가입자 목록</h1>
+    <p class="mt-1 text-sm text-slate-500">총 {{ users|length }}명</p>
+</header>
+
+<div class="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
+    <table class="w-full min-w-[420px] text-sm">
+        <thead>
+            <tr class="border-b border-slate-100 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <th class="px-5 py-3">아이디</th>
+                <th class="px-5 py-3">가입일</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+            {% for user in users %}
+            <tr class="hover:bg-slate-50/60">
+                <td class="px-5 py-3 font-medium text-slate-700">{{ user.username }}</td>
+                <td class="px-5 py-3 text-slate-500">{{ user.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<p class="mt-6">
+    <a href="{{ url_for('ledger.index') }}" class="text-sm font-semibold text-indigo-600 hover:underline">← 가계부로 돌아가기</a>
+</p>
+{% endblock %}

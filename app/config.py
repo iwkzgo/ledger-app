@@ -17,3 +17,8 @@ class Config:
         os.environ.get("DATABASE_URL", f"sqlite:///{os.path.join(BASE_DIR, 'ledger.db')}")
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # 쉼표로 구분된 관리자 아이디 목록. 여기 포함된 아이디로 로그인해야 /admin/users를 볼 수 있습니다.
+    ADMIN_USERNAMES = {
+        u.strip() for u in os.environ.get("ADMIN_USERNAMES", "").split(",") if u.strip()
+    }
