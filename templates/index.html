@@ -35,17 +35,17 @@
     {% endif %}
 {% endwith %}
 
-<section class="mb-10 rounded-2xl bg-white p-5 sm:p-6 shadow-sm ring-1 ring-slate-100">
-    <form action="{{ url_for('ledger.create_entry') }}" method="post" class="flex flex-col sm:flex-row gap-3">
+<section class="sticky top-0 z-20 mb-10 rounded-2xl bg-white p-5 shadow-md ring-1 ring-slate-100 sm:p-6">
+    <form action="{{ url_for('ledger.create_entry') }}" method="post" class="flex flex-col gap-3 sm:flex-row">
         <input
             type="text"
             name="raw_text"
             placeholder="예: 스벅 5천원"
             autofocus
             required
-            class="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-base placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            class="min-h-[3.25rem] flex-1 rounded-xl border border-slate-200 px-4 py-3 text-base placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
         >
-        <button type="submit" class="rounded-xl bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-indigo-700 active:bg-indigo-800 transition">
+        <button type="submit" class="min-h-[3.25rem] rounded-xl bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:bg-indigo-800">
             저장
         </button>
     </form>
@@ -233,13 +233,13 @@
 
             <div class="flex flex-wrap gap-2">
                 <input type="radio" id="tab-{{ row.month }}-expense" name="tab-{{ row.month }}" class="peer/expense hidden" checked>
-                <label for="tab-{{ row.month }}-expense" class="flex-1 cursor-pointer rounded-full bg-slate-100 py-1.5 text-center text-sm font-semibold text-slate-500 peer-checked/expense:bg-indigo-600 peer-checked/expense:text-white">지출</label>
+                <label for="tab-{{ row.month }}-expense" class="flex-1 cursor-pointer rounded-full bg-slate-100 py-2.5 text-center text-sm font-semibold text-slate-500 peer-checked/expense:bg-indigo-600 peer-checked/expense:text-white">지출</label>
 
                 <input type="radio" id="tab-{{ row.month }}-income" name="tab-{{ row.month }}" class="peer/income hidden">
-                <label for="tab-{{ row.month }}-income" class="flex-1 cursor-pointer rounded-full bg-slate-100 py-1.5 text-center text-sm font-semibold text-slate-500 peer-checked/income:bg-indigo-600 peer-checked/income:text-white">수입</label>
+                <label for="tab-{{ row.month }}-income" class="flex-1 cursor-pointer rounded-full bg-slate-100 py-2.5 text-center text-sm font-semibold text-slate-500 peer-checked/income:bg-indigo-600 peer-checked/income:text-white">수입</label>
 
                 <input type="radio" id="tab-{{ row.month }}-savings" name="tab-{{ row.month }}" class="peer/savings hidden">
-                <label for="tab-{{ row.month }}-savings" class="flex-1 cursor-pointer rounded-full bg-slate-100 py-1.5 text-center text-sm font-semibold text-slate-500 peer-checked/savings:bg-indigo-600 peer-checked/savings:text-white">저축</label>
+                <label for="tab-{{ row.month }}-savings" class="flex-1 cursor-pointer rounded-full bg-slate-100 py-2.5 text-center text-sm font-semibold text-slate-500 peer-checked/savings:bg-indigo-600 peer-checked/savings:text-white">저축</label>
 
                 <div class="hidden w-full peer-checked/expense:block">
                     {{ render_donut(row.expense_slices, "이 달은 지출 내역이 없습니다.") }}
@@ -295,7 +295,7 @@
                     <td class="px-5 py-3 text-right text-slate-700">{{ "{:,}".format(entry.amount) }}원</td>
                     <td class="px-5 py-3">
                         <form action="{{ url_for('ledger.update_entry_category', entry_id=entry.id) }}" method="post">
-                            <select name="category" onchange="this.form.submit()" class="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs font-medium text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-200">
+                            <select name="category" onchange="this.form.submit()" class="min-h-[2.5rem] rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-200">
                                 {% for category in category_choices %}
                                 <option value="{{ category }}" {% if category == entry.category %}selected{% endif %}>{{ category }}</option>
                                 {% endfor %}
@@ -304,7 +304,7 @@
                     </td>
                     <td class="px-5 py-3 text-right">
                         <form action="{{ url_for('ledger.delete_entry', entry_id=entry.id) }}" method="post">
-                            <button type="submit" class="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition">삭제</button>
+                            <button type="submit" class="min-h-[2.5rem] rounded-lg bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-100">삭제</button>
                         </form>
                     </td>
                 </tr>

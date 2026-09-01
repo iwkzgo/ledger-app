@@ -58,17 +58,17 @@
                     name="amount"
                     value="{{ recurring.amount }}"
                     inputmode="decimal"
-                    class="w-32 rounded-lg border border-slate-200 px-3 py-1.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-200"
+                    class="min-h-[2.75rem] w-32 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-200"
                 >
-                <select name="day_of_month" class="rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-200">
+                <select name="day_of_month" class="min-h-[2.75rem] rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-200">
                     {% for day in range(1, 32) %}
                     <option value="{{ day }}" {% if day == recurring.day_of_month %}selected{% endif %}>매달 {{ day }}일</option>
                     {% endfor %}
                 </select>
-                <button type="submit" class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition">저장</button>
+                <button type="submit" class="min-h-[2.75rem] rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200">저장</button>
             </form>
             <form action="{{ url_for('recurring.delete', item_id=recurring.id) }}" method="post" class="mt-2">
-                <button type="submit" class="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition">삭제</button>
+                <button type="submit" class="min-h-[2.75rem] rounded-lg bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-100">삭제</button>
             </form>
         </div>
         {% endfor %}
