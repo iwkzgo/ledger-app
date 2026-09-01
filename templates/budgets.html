@@ -1,55 +1,50 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<title>카테고리별 월 예산 설정</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-<div class="container">
-    <h1>카테고리별 월 예산 설정</h1>
-    <p>카테고리마다 한 달 예산을 정해두면, 지출이 80%를 넘으면 주의 알림을, 100%를 넘으면 초과 알림을 보여줍니다. 0으로 두거나 비워두면 그 카테고리는 예산 관리 대상에서 빠집니다.</p>
-    <p>"10만원", "5만원", "300000"처럼 입력해도 자동으로 숫자로 바뀝니다.</p>
+{% extends "base.html" %}
+{% block title %}카테고리별 월 예산 설정{% endblock %}
+{% block content %}
+<header class="mb-8">
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">💰 카테고리별 월 예산 설정</h1>
+    <p class="mt-2 text-sm text-slate-500">카테고리마다 한 달 예산을 정해두면, 지출이 80%를 넘으면 주의 알림을, 100%를 넘으면 초과 알림을 보여줍니다. 0으로 두거나 비워두면 예산 관리 대상에서 빠집니다.</p>
+    <p class="mt-1 text-sm text-slate-500">"10만원", "5만원", "300000"처럼 입력해도 자동으로 숫자로 바뀝니다.</p>
+</header>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul class="flash">
-                {% for category, message in messages %}
-                    <li class="flash-{{ category }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% set flash_styles = {
+        'success': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        'info': 'bg-blue-50 text-blue-700 border-blue-200',
+    } %}
+    <div class="mb-6 space-y-2">
+        {% for category, message in messages %}
+        <div class="rounded-xl border px-4 py-3 text-sm font-medium {{ flash_styles.get(category, 'bg-slate-50 text-slate-700 border-slate-200') }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}
 
-    <form action="{{ url_for('budgets_page') }}" method="post">
-        <table>
-            <thead>
-                <tr>
-                    <th>카테고리</th>
-                    <th>월 예산 (원)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for category in categories %}
-                <tr>
-                    <td>{{ category }}</td>
-                    <td>
-                        <input
-                            type="text"
-                            inputmode="decimal"
-                            placeholder="예: 10만원"
-                            name="budget__{{ category }}"
-                            value="{{ budgets.get(category, 0) }}"
-                        >
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <button type="submit">저장</button>
-    </form>
+<form action="{{ url_for('budgets_page') }}" method="post" class="space-y-6">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {% for category in categories %}
+        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
+            <label class="mb-2 block text-sm font-semibold text-slate-700">{{ category }}</label>
+            <input
+                type="text"
+                inputmode="decimal"
+                placeholder="예: 10만원"
+                name="budget__{{ category }}"
+                value="{{ budgets.get(category, 0) }}"
+                class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            >
+        </div>
+        {% endfor %}
+    </div>
+    <button type="submit" class="rounded-xl bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
+        저장
+    </button>
+</form>
 
-    <p><a href="{{ url_for('index') }}">← 가계부로 돌아가기</a></p>
-</div>
-</body>
-</html>
+<p class="mt-6">
+    <a href="{{ url_for('index') }}" class="text-sm font-semibold text-indigo-600 hover:underline">← 가계부로 돌아가기</a>
+</p>
+{% endblock %}

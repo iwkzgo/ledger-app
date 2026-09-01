@@ -128,7 +128,7 @@ def budgets_page():
             amount = parse_amount(raw_value) or 0
             db.set_budget(category, amount)
         flash("예산을 저장했습니다.", "success")
-        return redirect(url_for("budgets_page"))
+        return redirect(url_for("index"))
 
     return render_template(
         "budgets.html",

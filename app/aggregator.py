@@ -74,6 +74,23 @@ def _category_totals_for_month(month: str) -> Dict[str, int]:
     return dict(totals)
 
 
+def build_category_breakdown(category: str, month: str = None) -> List[Dict]:
+    """해당 달, 해당 카테고리의 지출을 항목명 기준으로 합산해서 많이 쓴 순으로 반환합니다."""
+    month = month or current_month()
+    totals: Dict[str, Dict[str, int]] = {}
+    for entry in db.fetch_all_entries():
+        if entry["created_at"][:7] != month or entry["category"] != category:
+            continue
+        info = totals.setdefault(entry["item"], {"count": 0, "amount": 0})
+        info["count"] += 1
+        info["amount"] += entry["amount"]
+
+    return [
+        {"item": item, "amount": info["amount"], "count": info["count"]}
+        for item, info in sorted(totals.items(), key=lambda kv: kv[1]["amount"], reverse=True)
+    ]
+
+
 def build_budget_status(month: str = None) -> List[Dict]:
     """설정된 예산이 있는 카테고리에 대해 이번 달 사용률을 계산합니다."""
     month = month or current_month()
@@ -103,6 +120,7 @@ def build_budget_status(month: str = None) -> List[Dict]:
                 "spent": spent,
                 "percent": percent,
                 "level": level,
+                "breakdown": build_category_breakdown(category, month),
             }
         )
     return status
