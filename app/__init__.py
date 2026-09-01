@@ -38,7 +38,8 @@ def create_app(config_class=Config):
     app.register_blueprint(admin_bp)
     app.register_blueprint(recurring_bp)
 
-    with app.app_context():
-        db.create_all()
+    from .schema_sync import sync_schema
+
+    sync_schema(app)
 
     return app
