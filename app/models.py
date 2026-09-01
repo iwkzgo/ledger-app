@@ -13,6 +13,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    last_login_at = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, password: str) -> None:
         # 일부 환경(예: OpenSSL 없이 빌드된 Python)에서 기본값인 scrypt를 못 쓰는 경우가 있어

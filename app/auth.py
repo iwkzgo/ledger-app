@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
 
@@ -24,7 +26,7 @@ def signup():
             flash("이미 사용 중인 아이디입니다.", "error")
             return redirect(url_for("auth.signup"))
 
-        user = User(username=username)
+        user = User(username=username, last_login_at=datetime.now())
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
@@ -47,6 +49,8 @@ def login():
             flash("아이디 또는 비밀번호가 올바르지 않습니다.", "error")
             return redirect(url_for("auth.login"))
 
+        user.last_login_at = datetime.now()
+        db.session.commit()
         login_user(user)
         return redirect(url_for("ledger.index"))
 
