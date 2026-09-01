@@ -7,7 +7,7 @@ from app.aggregator import (
     build_monthly_summary,
     current_month,
 )
-from app.categorizer import categorize_item
+from app.categorizer import categorize_item, learn_category
 from app.rules import (
     EXPENSE_CATEGORY_ORDER,
     FALLBACK_CATEGORY,
@@ -96,6 +96,7 @@ def confirm_entry():
     category = request.form.get("category", FALLBACK_CATEGORY)
 
     db.insert_entry(raw_text, item, int(amount), category)
+    learn_category(item, category)
     flash(f'저장했습니다: {item} · {int(amount):,}원 · {category}', "success")
     flash_budget_warning(category)
     return redirect(url_for("index"))
@@ -111,7 +112,10 @@ def delete_entry(entry_id):
 @app.route("/entry/<int:entry_id>/category", methods=["POST"])
 def update_entry_category(entry_id):
     category = request.form.get("category", FALLBACK_CATEGORY)
+    entry = db.get_entry(entry_id)
     db.update_entry_category(entry_id, category)
+    if entry is not None:
+        learn_category(entry["item"], category)
     flash(f'카테고리를 "{category}"(으)로 수정했습니다.', "info")
     return redirect(url_for("index"))
 

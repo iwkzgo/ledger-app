@@ -1,7 +1,7 @@
 import os
 import sqlite3
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(BASE_DIR, "ledger.db")
@@ -32,6 +32,14 @@ def init_db() -> None:
             CREATE TABLE IF NOT EXISTS budgets (
                 category TEXT PRIMARY KEY,
                 monthly_amount INTEGER NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS learned_categories (
+                item_key TEXT PRIMARY KEY,
+                category TEXT NOT NULL
             )
             """
         )
@@ -70,6 +78,31 @@ def update_entry_category(entry_id: int, category: str) -> None:
     with get_connection() as conn:
         conn.execute(
             "UPDATE entries SET category = ? WHERE id = ?", (category, entry_id)
+        )
+
+
+def get_entry(entry_id: int) -> Optional[Dict]:
+    with get_connection() as conn:
+        row = conn.execute("SELECT * FROM entries WHERE id = ?", (entry_id,)).fetchone()
+    return dict(row) if row else None
+
+
+def get_learned_category(item_key: str) -> Optional[str]:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT category FROM learned_categories WHERE item_key = ?", (item_key,)
+        ).fetchone()
+    return row["category"] if row else None
+
+
+def set_learned_category(item_key: str, category: str) -> None:
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO learned_categories (item_key, category) VALUES (?, ?)
+            ON CONFLICT(item_key) DO UPDATE SET category = excluded.category
+            """,
+            (item_key, category),
         )
 
 
