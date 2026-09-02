@@ -55,7 +55,15 @@
 </section>
 
 <section class="mb-10">
-    <h2 class="mb-4 text-lg font-bold text-slate-900 dark:text-slate-50">이번 달({{ current_month }}) 예산 현황</h2>
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h2 class="text-lg font-bold text-slate-900 dark:text-slate-50">이번 달({{ current_month }}) 예산 현황</h2>
+        {% if budget_status %}
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+            예산 합계 <span class="font-semibold text-slate-700 dark:text-slate-200">{{ "{:,}".format(budget_status|sum(attribute='budget')) }}원</span>
+            · 사용 <span class="font-semibold text-slate-700 dark:text-slate-200">{{ "{:,}".format(budget_status|sum(attribute='spent')) }}원</span>
+        </p>
+        {% endif %}
+    </div>
     {% if budget_status %}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {% set budget_theme = {
