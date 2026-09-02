@@ -222,9 +222,18 @@
             {% for dot in weekly_chart.dots %}
             <circle
                 cx="{{ dot.x }}" cy="{{ dot.y }}"
+                r="12"
+                fill="transparent"
+                class="cursor-pointer"
+            ><title>{{ dot.label }}요일 {{ "{:,}".format(dot.amount) }}원</title></circle>
+            {% endfor %}
+            {% for dot in weekly_chart.dots %}
+            <circle
+                cx="{{ dot.x }}" cy="{{ dot.y }}"
                 r="{{ 4 if dot.is_today else 3 }}"
                 fill="{{ '#4338ca' if dot.is_today else '#6366f1' }}"
-            ><title>{{ dot.label }}요일 {{ "{:,}".format(dot.amount) }}원</title></circle>
+                pointer-events="none"
+            />
             {% endfor %}
         </svg>
         <div class="mt-2 flex justify-between text-xs text-slate-400 dark:text-slate-500">
