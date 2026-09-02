@@ -1,3 +1,4 @@
+import calendar as pycalendar
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
@@ -126,6 +127,63 @@ def build_weekly_pattern(user_id: int) -> List[Dict]:
         }
         for index, day in enumerate(week_dates)
     ]
+
+
+def build_calendar_month(user_id: int, month: str) -> Dict:
+    """해당 월의 달력을 일요일 시작으로 구성하고, 날짜별 지출/수입 합계를 계산합니다."""
+    year, mon = map(int, month.split("-"))
+    weeks_of_dates = pycalendar.Calendar(firstweekday=6).monthdatescalendar(year, mon)
+
+    range_start_date = weeks_of_dates[0][0]
+    range_end_date = weeks_of_dates[-1][-1] + timedelta(days=1)
+    range_start = datetime.combine(range_start_date, datetime.min.time()) - KST_OFFSET
+    range_end = datetime.combine(range_end_date, datetime.min.time()) - KST_OFFSET
+
+    daily_expense: Dict = defaultdict(int)
+    daily_income: Dict = defaultdict(int)
+    entries = Entry.query.filter(
+        Entry.user_id == user_id,
+        Entry.created_at >= range_start,
+        Entry.created_at < range_end,
+    ).all()
+    for entry in entries:
+        day = to_kst(entry.created_at).date()
+        if entry.category == INCOME_CATEGORY:
+            daily_income[day] += entry.amount
+        elif entry.category == SAVINGS_CATEGORY:
+            continue
+        else:
+            daily_expense[day] += entry.amount
+
+    today = to_kst(datetime.now()).date()
+    weeks = [
+        [
+            {
+                "day": day.day,
+                "in_month": day.month == mon,
+                "is_today": day == today,
+                "expense": daily_expense.get(day, 0),
+                "income": daily_income.get(day, 0),
+            }
+            for day in week
+        ]
+        for week in weeks_of_dates
+    ]
+
+    prev_month_date = datetime(year, mon, 1) - timedelta(days=1)
+    next_month_date = datetime(year, mon, pycalendar.monthrange(year, mon)[1]) + timedelta(days=1)
+
+    total_expense = sum(amount for day, amount in daily_expense.items() if day.month == mon)
+    total_income = sum(amount for day, amount in daily_income.items() if day.month == mon)
+
+    return {
+        "month": month,
+        "weeks": weeks,
+        "total_expense": total_expense,
+        "total_income": total_income,
+        "prev_month": prev_month_date.strftime("%Y-%m"),
+        "next_month": next_month_date.strftime("%Y-%m"),
+    }
 
 
 def _savings_total_for_month(user_id: int, month: str) -> int:

@@ -7,6 +7,9 @@
         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">"스벅 5천원", "버스 1400원", "용돈 10만원"처럼 입력하면 자동으로 분류돼요.</p>
     </div>
     <div class="flex flex-wrap gap-2">
+        <a href="{{ url_for('ledger.calendar_page') }}" class="inline-flex items-center gap-1 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 transition dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700">
+            📅 캘린더 보기
+        </a>
         <a href="{{ url_for('recurring.index') }}" class="inline-flex items-center gap-1 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 transition dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700">
             🔁 고정지출 관리
         </a>

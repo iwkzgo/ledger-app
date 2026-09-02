@@ -10,6 +10,7 @@ from openpyxl.chart import PieChart, Reference
 from .aggregator import (
     EXPENSE_CATEGORIES,
     build_budget_status,
+    build_calendar_month,
     build_monthly_summary,
     build_savings_goal_status,
     build_weekly_pattern,
@@ -295,6 +296,19 @@ def export_csv():
             )
         },
     )
+
+
+@bp.route("/calendar")
+@login_required
+def calendar_page():
+    month = request.args.get("month", "").strip() or current_month()
+    try:
+        year, mon = map(int, month.split("-"))
+        datetime(year, mon, 1)
+    except ValueError:
+        month = current_month()
+
+    return render_template("calendar.html", calendar_data=build_calendar_month(current_user.id, month))
 
 
 @bp.route("/entries")
