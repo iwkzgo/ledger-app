@@ -257,7 +257,8 @@
                 r="12"
                 fill="transparent"
                 class="cursor-pointer"
-            ><title>{{ dot.label }}요일 {{ "{:,}".format(dot.amount) }}원</title></circle>
+            ><title>{{ dot.label }}요일 {{ "{:,}".format(dot.amount) }}원{% if dot.categories %}
+{% for cat, amt in dot.categories.items() %}{{ cat }} {{ "{:,}".format(amt) }}원{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}</title></circle>
             {% endfor %}
             {% for dot in weekly_chart.dots %}
             <circle

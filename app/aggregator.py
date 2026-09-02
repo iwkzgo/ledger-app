@@ -105,6 +105,7 @@ def build_weekly_pattern(user_id: int) -> List[Dict]:
     range_end = range_start + timedelta(days=7)
 
     totals = {day: 0 for day in week_dates}
+    category_totals = {day: defaultdict(int) for day in week_dates}
     entries = Entry.query.filter(
         Entry.user_id == user_id,
         Entry.created_at >= range_start,
@@ -116,6 +117,7 @@ def build_weekly_pattern(user_id: int) -> List[Dict]:
         day = to_kst(entry.created_at).date()
         if day in totals:
             totals[day] += entry.amount
+            category_totals[day][entry.category] += entry.amount
 
     return [
         {
@@ -123,6 +125,9 @@ def build_weekly_pattern(user_id: int) -> List[Dict]:
             "label": WEEKDAY_LABELS[index],
             "amount": totals[day],
             "is_today": day == today,
+            "categories": dict(
+                sorted(category_totals[day].items(), key=lambda kv: kv[1], reverse=True)
+            ),
         }
         for index, day in enumerate(week_dates)
     ]

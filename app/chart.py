@@ -36,6 +36,7 @@ def build_line_chart(daily_totals: List[Dict]) -> Dict:
                 "label": day["label"],
                 "amount": day["amount"],
                 "is_today": day["is_today"],
+                "categories": day.get("categories", {}),
             }
         )
 
