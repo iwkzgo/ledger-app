@@ -207,8 +207,8 @@
 
 {% macro render_donut(slices, empty_message) %}
     {% if slices %}
-    <div class="flex flex-col items-center gap-4 pt-4">
-        <svg width="160" height="160" viewBox="0 0 160 160">
+    <div class="flex flex-col items-center gap-6 pt-4 sm:flex-row sm:items-center sm:justify-center">
+        <svg width="160" height="160" viewBox="0 0 160 160" class="shrink-0">
             <g transform="rotate(-90 80 80)">
                 {% for slice in slices %}
                 <circle
@@ -220,15 +220,14 @@
                 {% endfor %}
             </g>
         </svg>
-        <div class="flex flex-wrap justify-center gap-x-6 gap-y-3">
-            {% for slice in slices %}
-            <div class="text-center">
-                <div class="mb-1 flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
-                    <span class="h-2.5 w-2.5 shrink-0 rounded-full" style="background:{{ slice.color }}"></span>
-                    {{ slice.category }}
-                </div>
-                <div class="text-lg font-bold text-slate-900 dark:text-slate-50">{{ slice.percent }}%</div>
-                <div class="text-xs text-slate-400 dark:text-slate-500">{{ "{:,}".format(slice.value) }}원</div>
+        <div class="w-full max-w-xs space-y-2 sm:max-w-sm">
+            {% for slice in slices|sort(attribute='value', reverse=True) %}
+            <div class="flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-900/40">
+                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700">{{ loop.index }}</span>
+                <span class="h-2.5 w-2.5 shrink-0 rounded-full" style="background:{{ slice.color }}"></span>
+                <span class="flex-1 truncate text-sm font-medium text-slate-700 dark:text-slate-200">{{ slice.category }}</span>
+                <span class="text-sm font-semibold text-slate-900 dark:text-slate-50">{{ "{:,}".format(slice.value) }}원</span>
+                <span class="w-12 shrink-0 text-right text-xs text-slate-400 dark:text-slate-500">{{ slice.percent }}%</span>
             </div>
             {% endfor %}
         </div>
