@@ -7,7 +7,7 @@ from flask_login import current_user, login_required
 
 from .extensions import db
 from .models import Entry, RecurringItem
-from .rules import FIXED_EXPENSE_CATEGORY
+from .rules import FIXED_EXPENSE_CATEGORY, INCOME_CATEGORY
 from .text_parser import parse_amount, parse_entry
 
 bp = Blueprint("recurring", __name__, url_prefix="/recurring")
@@ -46,14 +46,16 @@ def sync_recurring_items(user_id: int) -> List[str]:
             if scheduled_date > today:
                 break
 
+            category = recurring.category or FIXED_EXPENSE_CATEGORY
+            label = "고정수입" if category == INCOME_CATEGORY else "고정지출"
             db.session.add(
                 Entry(
                     user_id=user_id,
                     created_at=datetime.combine(scheduled_date, datetime.min.time()),
-                    raw_text=f"{recurring.item} {recurring.amount:,}원 (고정지출 자동기록)",
+                    raw_text=f"{recurring.item} {recurring.amount:,}원 ({label} 자동기록)",
                     item=recurring.item,
                     amount=recurring.amount,
-                    category=FIXED_EXPENSE_CATEGORY,
+                    category=category,
                 )
             )
             recurring.last_recorded_month = month_cursor
@@ -83,11 +85,17 @@ def index():
         day = int(day_raw) if day_raw.isdigit() else 1
         day = max(1, min(day, 31))
 
+        item_type = request.form.get("type", "expense").strip()
+        category = INCOME_CATEGORY if item_type == "income" else FIXED_EXPENSE_CATEGORY
+        label = "고정수입" if category == INCOME_CATEGORY else "고정지출"
+
         db.session.add(
-            RecurringItem(user_id=current_user.id, item=item, amount=amount, day_of_month=day)
+            RecurringItem(
+                user_id=current_user.id, item=item, amount=amount, day_of_month=day, category=category
+            )
         )
         db.session.commit()
-        flash(f'고정지출로 등록했습니다: {item} · {amount:,}원 · 매달 {day}일', "success")
+        flash(f'{label}으로 등록했습니다: {item} · {amount:,}원 · 매달 {day}일', "success")
         return redirect(url_for("recurring.index"))
 
     recurring_items = (
@@ -95,7 +103,9 @@ def index():
         .order_by(RecurringItem.day_of_month)
         .all()
     )
-    return render_template("recurring.html", recurring_items=recurring_items)
+    return render_template(
+        "recurring.html", recurring_items=recurring_items, INCOME_CATEGORY=INCOME_CATEGORY
+    )
 
 
 @bp.route("/<int:item_id>/edit", methods=["POST"])
@@ -120,7 +130,8 @@ def edit(item_id):
 @login_required
 def delete(item_id):
     recurring = RecurringItem.query.filter_by(id=item_id, user_id=current_user.id).first_or_404()
+    label = "고정수입" if recurring.category == INCOME_CATEGORY else "고정지출"
     db.session.delete(recurring)
     db.session.commit()
-    flash("고정지출 등록을 삭제했습니다.", "info")
+    flash(f"{label} 등록을 삭제했습니다.", "info")
     return redirect(url_for("recurring.index"))

@@ -63,7 +63,7 @@ def flash_budget_warning(category: str) -> None:
 def index():
     recorded = sync_recurring_items(current_user.id)
     if recorded:
-        flash("고정지출이 자동 기록되었습니다: " + ", ".join(recorded), "info")
+        flash("고정 지출/수입이 자동 기록되었습니다: " + ", ".join(recorded), "info")
         flash_budget_warning(FIXED_EXPENSE_CATEGORY)
 
     recent_entries = (

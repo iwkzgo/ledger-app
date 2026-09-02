@@ -64,6 +64,9 @@ class RecurringItem(db.Model):
     item = db.Column(db.String(255), nullable=False)
     amount = db.Column(db.Integer, nullable=False)
     day_of_month = db.Column(db.Integer, nullable=False)
+    # "고정지출"(기존 기본값) 또는 "수입". 스키마 동기화는 새 컬럼을 항상 nullable로
+    # 추가하므로, 기존에 저장된 행은 NULL일 수 있어 사용할 때 고정지출로 취급합니다.
+    category = db.Column(db.String(50), nullable=True)
     # 마지막으로 자동 기록한 달 ("YYYY-MM"). 중복 기록을 막고, 사용자가 지운 자동 기록을
     # 같은 달에 다시 만들지 않기 위한 기준으로 씁니다.
     last_recorded_month = db.Column(db.String(7), nullable=True)
