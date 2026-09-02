@@ -2,22 +2,22 @@
 {% block title %}카테고리 확인{% endblock %}
 {% block content %}
 <div class="mx-auto max-w-md">
-    <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-        <h1 class="mb-2 text-xl font-bold text-slate-900">🤔 카테고리를 확인해주세요</h1>
-        <p class="mb-5 text-sm text-slate-500">규칙으로 자동 분류하지 못했어요. 한 번 지정하면 다음부터는 같은 항목명을 자동으로 분류합니다. 기억나지 않으면 "기타"로 두셔도 됩니다.</p>
+    <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
+        <h1 class="mb-2 text-xl font-bold text-slate-900 dark:text-slate-50">🤔 카테고리를 확인해주세요</h1>
+        <p class="mb-5 text-sm text-slate-500 dark:text-slate-400">규칙으로 자동 분류하지 못했어요. 한 번 지정하면 다음부터는 같은 항목명을 자동으로 분류합니다. 기억나지 않으면 "기타"로 두셔도 됩니다.</p>
 
         <dl class="mb-6 space-y-2 text-sm">
-            <div class="flex justify-between border-b border-slate-100 pb-2">
-                <dt class="text-slate-400">입력한 내용</dt>
-                <dd class="font-medium text-slate-700">{{ raw_text }}</dd>
+            <div class="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-700">
+                <dt class="text-slate-400 dark:text-slate-500">입력한 내용</dt>
+                <dd class="font-medium text-slate-700 dark:text-slate-200">{{ raw_text }}</dd>
             </div>
-            <div class="flex justify-between border-b border-slate-100 pb-2">
-                <dt class="text-slate-400">항목</dt>
-                <dd class="font-medium text-slate-700">{{ item }}</dd>
+            <div class="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-700">
+                <dt class="text-slate-400 dark:text-slate-500">항목</dt>
+                <dd class="font-medium text-slate-700 dark:text-slate-200">{{ item }}</dd>
             </div>
             <div class="flex justify-between">
-                <dt class="text-slate-400">금액</dt>
-                <dd class="font-semibold text-slate-900">{{ "{:,}".format(amount) }}원</dd>
+                <dt class="text-slate-400 dark:text-slate-500">금액</dt>
+                <dd class="font-semibold text-slate-900 dark:text-slate-50">{{ "{:,}".format(amount) }}원</dd>
             </div>
         </dl>
 
@@ -25,7 +25,7 @@
             <input type="hidden" name="raw_text" value="{{ raw_text }}">
             <input type="hidden" name="item" value="{{ item }}">
             <input type="hidden" name="amount" value="{{ amount }}">
-            <select name="category" class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
+            <select name="category" class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100">
                 {% for category in categories %}
                 <option value="{{ category }}" {% if category == "기타" %}selected{% endif %}>{{ category }}</option>
                 {% endfor %}

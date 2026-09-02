@@ -2,18 +2,18 @@
 {% block title %}회원가입{% endblock %}
 {% block content %}
 <div class="mx-auto max-w-sm">
-    <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-        <h1 class="mb-6 text-xl font-bold text-slate-900">✨ 회원가입</h1>
+    <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
+        <h1 class="mb-6 text-xl font-bold text-slate-900 dark:text-slate-50">✨ 회원가입</h1>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
             {% set flash_styles = {
-                'success': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                'error': 'bg-rose-50 text-rose-700 border-rose-200',
+                'success': 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30',
+                'error': 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30',
             } %}
             <div class="mb-4 space-y-2">
                 {% for category, message in messages %}
-                <div class="rounded-xl border px-4 py-3 text-sm font-medium {{ flash_styles.get(category, 'bg-slate-50 text-slate-700 border-slate-200') }}">
+                <div class="rounded-xl border px-4 py-3 text-sm font-medium {{ flash_styles.get(category, 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-900/40 dark:text-slate-300 dark:border-slate-700') }}">
                     {{ message }}
                 </div>
                 {% endfor %}
@@ -23,24 +23,24 @@
 
         <form action="{{ url_for('auth.signup') }}" method="post" class="space-y-4">
             <div>
-                <label class="mb-1 block text-sm font-semibold text-slate-700">아이디</label>
-                <input type="text" name="username" required autofocus class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
+                <label class="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-300">아이디</label>
+                <input type="text" name="username" required autofocus class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-500/20">
             </div>
             <div>
-                <label class="mb-1 block text-sm font-semibold text-slate-700">비밀번호</label>
-                <input type="password" name="password" required class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
+                <label class="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-300">비밀번호</label>
+                <input type="password" name="password" required class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-500/20">
             </div>
             <div>
-                <label class="mb-1 block text-sm font-semibold text-slate-700">비밀번호 확인</label>
-                <input type="password" name="confirm" required class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100">
+                <label class="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-300">비밀번호 확인</label>
+                <input type="password" name="confirm" required class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-500/20">
             </div>
             <button type="submit" class="w-full rounded-xl bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
                 회원가입
             </button>
         </form>
 
-        <p class="mt-4 text-center text-sm text-slate-500">
-            이미 계정이 있으신가요? <a href="{{ url_for('auth.login') }}" class="font-semibold text-indigo-600 hover:underline">로그인</a>
+        <p class="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">
+            이미 계정이 있으신가요? <a href="{{ url_for('auth.login') }}" class="font-semibold text-indigo-600 hover:underline dark:text-indigo-400">로그인</a>
         </p>
     </div>
 </div>
