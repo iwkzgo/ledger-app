@@ -1,11 +1,14 @@
 import secrets
 import string
+from datetime import datetime, timedelta
 
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
+from sqlalchemy import func
 
 from .extensions import db
-from .models import User
+from .models import Entry, User
+from .timeutil import KST_OFFSET, to_kst
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -20,7 +23,34 @@ def _require_admin() -> None:
 def users():
     _require_admin()
     all_users = User.query.order_by(User.created_at.desc()).all()
-    return render_template("admin_users.html", users=all_users)
+
+    today = to_kst(datetime.now()).date()
+    monday = today - timedelta(days=today.weekday())
+    week_start = datetime.combine(monday, datetime.min.time()) - KST_OFFSET
+
+    entry_counts = dict(
+        db.session.query(Entry.user_id, func.count(Entry.id)).group_by(Entry.user_id).all()
+    )
+    last_entry_map = dict(
+        db.session.query(Entry.user_id, func.max(Entry.created_at)).group_by(Entry.user_id).all()
+    )
+
+    users_data = [
+        {
+            "user": user,
+            "entry_count": entry_counts.get(user.id, 0),
+            "last_entry_at": last_entry_map.get(user.id),
+        }
+        for user in all_users
+    ]
+
+    stats = {
+        "total_users": len(all_users),
+        "new_this_week": sum(1 for u in all_users if u.created_at >= week_start),
+        "active_this_week": sum(1 for u in all_users if u.last_login_at and u.last_login_at >= week_start),
+    }
+
+    return render_template("admin_users.html", users_data=users_data, stats=stats)
 
 
 @bp.route("/users/<int:user_id>/reset-password", methods=["POST"])

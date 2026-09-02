@@ -3,8 +3,23 @@
 {% block content %}
 <header class="mb-8">
     <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-50">👤 가입자 목록</h1>
-    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">총 {{ users|length }}명</p>
+    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">총 {{ stats.total_users }}명</p>
 </header>
+
+<div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
+        <p class="text-sm text-slate-500 dark:text-slate-400">총 가입자</p>
+        <p class="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-50">{{ stats.total_users }}명</p>
+    </div>
+    <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
+        <p class="text-sm text-slate-500 dark:text-slate-400">이번 주 신규 가입</p>
+        <p class="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-50">{{ stats.new_this_week }}명</p>
+    </div>
+    <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
+        <p class="text-sm text-slate-500 dark:text-slate-400">이번 주 활성 사용자</p>
+        <p class="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-50">{{ stats.active_this_week }}명</p>
+    </div>
+</div>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -26,22 +41,29 @@
 {% endwith %}
 
 <div class="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
-    <table class="w-full min-w-[560px] text-sm">
+    <table class="w-full min-w-[760px] text-sm">
         <thead>
             <tr class="border-b border-slate-100 text-left text-xs font-semibold uppercase tracking-wide text-slate-400 dark:border-slate-700 dark:text-slate-500">
                 <th class="px-5 py-3">아이디</th>
                 <th class="px-5 py-3">가입일</th>
                 <th class="px-5 py-3">최근 접속일</th>
+                <th class="px-5 py-3">입력 건수</th>
+                <th class="px-5 py-3">최근 입력일</th>
                 <th class="px-5 py-3"></th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-50 dark:divide-slate-700">
-            {% for user in users %}
+            {% for row in users_data %}
+            {% set user = row.user %}
             <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-700/40">
                 <td class="px-5 py-3 font-medium text-slate-700 dark:text-slate-200">{{ user.username }}</td>
                 <td class="px-5 py-3 text-slate-500 dark:text-slate-400">{{ (user.created_at | kst).strftime("%Y-%m-%d %H:%M") }}</td>
                 <td class="px-5 py-3 text-slate-500 dark:text-slate-400">
                     {% if user.last_login_at %}{{ (user.last_login_at | kst).strftime("%Y-%m-%d %H:%M") }}{% else %}-{% endif %}
+                </td>
+                <td class="px-5 py-3 text-slate-500 dark:text-slate-400">{{ row.entry_count }}건</td>
+                <td class="px-5 py-3 text-slate-500 dark:text-slate-400">
+                    {% if row.last_entry_at %}{{ (row.last_entry_at | kst).strftime("%Y-%m-%d %H:%M") }}{% else %}-{% endif %}
                 </td>
                 <td class="px-5 py-3 text-right">
                     <form action="{{ url_for('admin.reset_password', user_id=user.id) }}" method="post">
