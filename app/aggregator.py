@@ -57,6 +57,10 @@ def build_monthly_summary(user_id: int) -> List[Dict]:
             for item in build_category_breakdown(user_id, SAVINGS_CATEGORY, month)
         }
 
+        expense_slices = build_donut_segments(ordered_categories)
+        for slice_info in expense_slices:
+            slice_info["breakdown"] = build_category_breakdown(user_id, slice_info["category"], month)
+
         summary.append(
             {
                 "month": month,
@@ -66,7 +70,7 @@ def build_monthly_summary(user_id: int) -> List[Dict]:
                 "remaining": data["income"] - data["expense_total"] - data["savings"],
                 "categories": categories,
                 "income_slices": build_donut_segments(income_breakdown),
-                "expense_slices": build_donut_segments(ordered_categories),
+                "expense_slices": expense_slices,
                 "savings_slices": build_donut_segments(savings_breakdown),
                 "savings_goal": build_savings_goal_status(user_id, month),
             }

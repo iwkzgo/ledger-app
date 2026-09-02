@@ -216,7 +216,8 @@
                     stroke="{{ slice.color }}" stroke-width="26"
                     stroke-dasharray="{{ slice.dasharray }}"
                     stroke-dashoffset="{{ slice.dashoffset }}"
-                ><title>{{ slice.category }} {{ slice.percent }}%</title></circle>
+                ><title>{{ slice.category }} {{ "{:,}".format(slice.value) }}원 ({{ slice.percent }}%){% if slice.breakdown %}
+{% for item in slice.breakdown %}{{ item.item }} {{ "{:,}".format(item.amount) }}원{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}</title></circle>
                 {% endfor %}
             </g>
         </svg>
