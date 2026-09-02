@@ -77,7 +77,6 @@ def index():
         "index.html",
         summary=build_monthly_summary(current_user.id),
         recent_entries=recent_entries,
-        category_choices=category_choices_for(current_user.id),
         budget_status=build_budget_status(current_user.id),
         current_month=current_month(),
         savings_goal=build_savings_goal_status(current_user.id, current_month()),
@@ -150,18 +149,6 @@ def delete_entry(entry_id):
     db.session.delete(entry)
     db.session.commit()
     flash("삭제했습니다.", "info")
-    return redirect(url_for("ledger.index"))
-
-
-@bp.route("/entry/<int:entry_id>/category", methods=["POST"])
-@login_required
-def update_entry_category(entry_id):
-    category = request.form.get("category", FALLBACK_CATEGORY)
-    entry = Entry.query.filter_by(id=entry_id, user_id=current_user.id).first_or_404()
-    entry.category = category
-    db.session.commit()
-    learn_category(entry.item, category, current_user.id)
-    flash(f'카테고리를 "{category}"(으)로 수정했습니다.', "info")
     return redirect(url_for("ledger.index"))
 
 
