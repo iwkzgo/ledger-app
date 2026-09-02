@@ -1,10 +1,13 @@
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
 from .chart import build_donut_segments
 from .models import Budget, Entry, SavingsGoal
 from .rules import EXPENSE_CATEGORY_ORDER, INCOME_CATEGORY, SAVINGS_CATEGORY
+from .timeutil import KST_OFFSET, to_kst
+
+WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"]
 
 EXPENSE_CATEGORIES = EXPENSE_CATEGORY_ORDER
 
@@ -90,6 +93,39 @@ def build_monthly_summary(user_id: int) -> List[Dict]:
         row["expense_comparison"] = {"diff": diff, "percent": percent, "direction": direction}
 
     return summary
+
+
+def build_weekly_pattern(user_id: int) -> List[Dict]:
+    """이번 주(월~일) 요일별 지출 합계를 KST 기준으로 계산합니다."""
+    today = to_kst(datetime.now()).date()
+    monday = today - timedelta(days=today.weekday())
+    week_dates = [monday + timedelta(days=offset) for offset in range(7)]
+
+    range_start = datetime.combine(monday, datetime.min.time()) - KST_OFFSET
+    range_end = range_start + timedelta(days=7)
+
+    totals = {day: 0 for day in week_dates}
+    entries = Entry.query.filter(
+        Entry.user_id == user_id,
+        Entry.created_at >= range_start,
+        Entry.created_at < range_end,
+    ).all()
+    for entry in entries:
+        if entry.category in (INCOME_CATEGORY, SAVINGS_CATEGORY):
+            continue
+        day = to_kst(entry.created_at).date()
+        if day in totals:
+            totals[day] += entry.amount
+
+    return [
+        {
+            "date": day.strftime("%m-%d"),
+            "label": WEEKDAY_LABELS[index],
+            "amount": totals[day],
+            "is_today": day == today,
+        }
+        for index, day in enumerate(week_dates)
+    ]
 
 
 def _savings_total_for_month(user_id: int, month: str) -> int:

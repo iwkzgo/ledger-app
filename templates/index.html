@@ -203,6 +203,39 @@
 {% endmacro %}
 
 <section class="mb-10">
+    <h2 class="mb-4 text-lg font-bold text-slate-900 dark:text-slate-50">이번 주 소비 패턴</h2>
+    <div class="rounded-2xl bg-white p-5 sm:p-6 shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
+        {% if weekly_total > 0 %}
+        <p class="mb-3 text-sm text-slate-500 dark:text-slate-400">이번 주 총 지출 <span class="font-semibold text-slate-700 dark:text-slate-200">{{ "{:,}".format(weekly_total) }}원</span></p>
+        <svg viewBox="0 0 {{ weekly_chart.width }} {{ weekly_chart.height }}" class="h-32 w-full">
+            <polyline
+                points="{{ weekly_chart.points }}"
+                fill="none"
+                stroke="#6366f1"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            />
+            {% for dot in weekly_chart.dots %}
+            <circle
+                cx="{{ dot.x }}" cy="{{ dot.y }}"
+                r="{{ 4 if dot.is_today else 3 }}"
+                fill="{{ '#4338ca' if dot.is_today else '#6366f1' }}"
+            ><title>{{ dot.label }}요일 {{ "{:,}".format(dot.amount) }}원</title></circle>
+            {% endfor %}
+        </svg>
+        <div class="mt-2 flex justify-between text-xs text-slate-400 dark:text-slate-500">
+            {% for dot in weekly_chart.dots %}
+            <span class="{{ 'font-semibold text-indigo-600 dark:text-indigo-400' if dot.is_today else '' }}">{{ dot.label }}</span>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="py-8 text-center text-sm text-slate-400 dark:text-slate-500">이번 주는 아직 지출 내역이 없습니다.</p>
+        {% endif %}
+    </div>
+</section>
+
+<section class="mb-10">
     <h2 class="mb-4 text-lg font-bold text-slate-900 dark:text-slate-50">월별 리포트</h2>
     <div class="space-y-6">
         {% for row in summary|reverse %}
