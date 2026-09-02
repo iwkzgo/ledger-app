@@ -334,6 +334,8 @@ def entries_page():
             flash(f'"{month}"은(는) 올바른 월 형식이 아니에요.', "error")
             month = ""
 
+    total_amount = query.with_entities(db.func.coalesce(db.func.sum(Entry.amount), 0)).scalar()
+
     pagination = query.order_by(Entry.created_at.desc()).paginate(
         page=page, per_page=30, error_out=False
     )
@@ -346,6 +348,7 @@ def entries_page():
         q=q,
         selected_category=category,
         month=month,
+        total_amount=total_amount,
     )
 
 
