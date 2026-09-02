@@ -13,9 +13,6 @@
         <a href="{{ url_for('recurring.index') }}" class="inline-flex items-center gap-1 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 transition dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700">
             🔁 고정 지출/수입 관리
         </a>
-        <a href="{{ url_for('ledger.budgets_page') }}" class="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
-            💰 예산 설정
-        </a>
     </div>
 </header>
 
@@ -57,12 +54,17 @@
 <section class="mb-10">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 class="text-lg font-bold text-slate-900 dark:text-slate-50">이번 달({{ current_month }}) 예산 현황</h2>
-        {% if budget_status %}
-        <p class="text-sm text-slate-500 dark:text-slate-400">
-            예산 합계 <span class="font-semibold text-slate-700 dark:text-slate-200">{{ "{:,}".format(budget_status|sum(attribute='budget')) }}원</span>
-            · 사용 <span class="font-semibold text-slate-700 dark:text-slate-200">{{ "{:,}".format(budget_status|sum(attribute='spent')) }}원</span>
-        </p>
-        {% endif %}
+        <div class="flex items-center gap-3">
+            {% if budget_status %}
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+                예산 합계 <span class="font-semibold text-slate-700 dark:text-slate-200">{{ "{:,}".format(budget_status|sum(attribute='budget')) }}원</span>
+                · 사용 <span class="font-semibold text-slate-700 dark:text-slate-200">{{ "{:,}".format(budget_status|sum(attribute='spent')) }}원</span>
+            </p>
+            <a href="{{ url_for('ledger.budgets_page') }}" class="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
+                💰 예산 수정
+            </a>
+            {% endif %}
+        </div>
     </div>
     {% if budget_status %}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
