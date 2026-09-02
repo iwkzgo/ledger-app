@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import Flask, send_from_directory
 
 from .config import Config
 from .extensions import db, login_manager
@@ -43,5 +43,11 @@ def create_app(config_class=Config):
     from .schema_sync import sync_schema
 
     sync_schema(app)
+
+    @app.route("/sw.js")
+    def service_worker():
+        # 서비스워커는 자신이 서빙된 경로 아래로만 제어 범위(scope)가 잡히므로,
+        # /static/sw.js가 아니라 루트에서 내려줘야 사이트 전체(/)를 제어할 수 있습니다.
+        return send_from_directory(app.static_folder, "sw.js", mimetype="application/javascript")
 
     return app

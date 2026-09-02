@@ -47,7 +47,7 @@
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}").catch(() => {});
+      navigator.serviceWorker.register("/sw.js").catch((err) => console.error("서비스워커 등록 실패:", err));
     });
   }
 
