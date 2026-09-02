@@ -217,6 +217,21 @@
                 </div>
             </div>
 
+            {% if row.expense_comparison %}
+            {% set cmp = row.expense_comparison %}
+            <p class="mb-5 text-xs font-semibold {{ 'text-rose-600' if cmp.direction == 'up' else 'text-emerald-600' if cmp.direction == 'down' else 'text-slate-400' }}">
+                {% if cmp.direction == 'same' %}
+                지난달과 지출이 같아요.
+                {% elif cmp.direction == 'up' and cmp.percent is not none %}
+                지난달보다 지출이 {{ cmp.percent }}% ↑ ({{ "{:,}".format(cmp.diff) }}원 증가)
+                {% elif cmp.direction == 'up' %}
+                지난달엔 없던 지출이 {{ "{:,}".format(cmp.diff) }}원 생겼어요.
+                {% else %}
+                지난달보다 지출이 {{ cmp.percent }}% ↓ ({{ "{:,}".format(-cmp.diff) }}원 감소)
+                {% endif %}
+            </p>
+            {% endif %}
+
             {% if row.savings_goal %}
             {% set theme = goal_theme[row.savings_goal.level] %}
             <div class="mb-5 rounded-xl bg-slate-50 p-3">

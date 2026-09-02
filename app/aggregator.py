@@ -68,6 +68,27 @@ def build_monthly_summary(user_id: int) -> List[Dict]:
                 "savings_goal": build_savings_goal_status(user_id, month),
             }
         )
+
+    for i, row in enumerate(summary):
+        if i == 0:
+            row["expense_comparison"] = None
+            continue
+
+        previous_total = summary[i - 1]["expense_total"]
+        current_total = row["expense_total"]
+        diff = current_total - previous_total
+
+        if diff == 0:
+            direction = "same"
+        elif diff > 0:
+            direction = "up"
+        else:
+            direction = "down"
+
+        percent = round(abs(diff) / previous_total * 100, 1) if previous_total > 0 else None
+
+        row["expense_comparison"] = {"diff": diff, "percent": percent, "direction": direction}
+
     return summary
 
 
