@@ -3,14 +3,13 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
+from .categories import get_expense_categories
 from .chart import build_donut_segments
 from .models import Budget, Entry, SavingsGoal
-from .rules import EXPENSE_CATEGORY_ORDER, INCOME_CATEGORY, SAVINGS_CATEGORY
+from .rules import INCOME_CATEGORY, SAVINGS_CATEGORY
 from .timeutil import KST_OFFSET, to_kst
 
 WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"]
-
-EXPENSE_CATEGORIES = EXPENSE_CATEGORY_ORDER
 
 WARNING_THRESHOLD = 80
 OVER_THRESHOLD = 100
@@ -46,7 +45,7 @@ def build_monthly_summary(user_id: int) -> List[Dict]:
         # 카테고리 순서를 고정해서 파이 조각 색이 월마다 같은 카테고리에 일관되게 붙도록 합니다.
         ordered_categories = {
             category: categories[category]
-            for category in EXPENSE_CATEGORY_ORDER
+            for category in get_expense_categories(user_id)
             if category in categories
         }
         income_breakdown = {
@@ -254,7 +253,7 @@ def build_budget_status(user_id: int, month: Optional[str] = None) -> List[Dict]
     totals = _category_totals_for_month(user_id, month)
 
     status = []
-    for category in EXPENSE_CATEGORY_ORDER:
+    for category in get_expense_categories(user_id):
         budget = budgets.get(category, 0)
         if budget <= 0:
             continue

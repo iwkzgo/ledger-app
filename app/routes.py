@@ -8,7 +8,6 @@ from openpyxl import Workbook
 from openpyxl.chart import PieChart, Reference
 
 from .aggregator import (
-    EXPENSE_CATEGORIES,
     build_budget_status,
     build_calendar_month,
     build_monthly_summary,
@@ -16,14 +15,14 @@ from .aggregator import (
     build_weekly_pattern,
     current_month,
 )
+from .categories import ensure_default_categories, get_expense_categories
 from .categorizer import categorize_item, learn_category
 from .chart import build_line_chart
 from .extensions import db
-from .models import Budget, Entry, SavingsGoal
+from .models import Budget, Category, Entry, LearnedCategory, SavingsGoal
 from .recurring import sync_recurring_items
 from .timeutil import to_kst
 from .rules import (
-    EXPENSE_CATEGORY_ORDER,
     FALLBACK_CATEGORY,
     FIXED_EXPENSE_CATEGORY,
     INCOME_CATEGORY,
@@ -33,7 +32,9 @@ from .text_parser import parse_amount, parse_entry
 
 bp = Blueprint("ledger", __name__)
 
-CATEGORY_CHOICES = [INCOME_CATEGORY, SAVINGS_CATEGORY] + EXPENSE_CATEGORY_ORDER
+
+def category_choices_for(user_id: int):
+    return [INCOME_CATEGORY, SAVINGS_CATEGORY] + get_expense_categories(user_id)
 
 
 def flash_budget_warning(category: str) -> None:
@@ -75,9 +76,8 @@ def index():
     return render_template(
         "index.html",
         summary=build_monthly_summary(current_user.id),
-        categories=EXPENSE_CATEGORIES,
         recent_entries=recent_entries,
-        category_choices=CATEGORY_CHOICES,
+        category_choices=category_choices_for(current_user.id),
         budget_status=build_budget_status(current_user.id),
         current_month=current_month(),
         savings_goal=build_savings_goal_status(current_user.id, current_month()),
@@ -101,6 +101,10 @@ def create_entry():
 
     item, amount = parsed
     category = categorize_item(item, current_user.id)
+    valid_categories = set(get_expense_categories(current_user.id)) | {INCOME_CATEGORY, SAVINGS_CATEGORY}
+    if category not in valid_categories:
+        # 규칙이 가리키는 카테고리를 사용자가 삭제한 경우, 미분류로 남기지 않고 안전하게 기타로 보냅니다.
+        category = FALLBACK_CATEGORY
 
     if category == FALLBACK_CATEGORY:
         return render_template(
@@ -108,7 +112,7 @@ def create_entry():
             raw_text=raw_text,
             item=item,
             amount=amount,
-            categories=CATEGORY_CHOICES,
+            categories=category_choices_for(current_user.id),
         )
 
     db.session.add(
@@ -342,7 +346,7 @@ def entries_page():
         "entries.html",
         pagination=pagination,
         entries=pagination.items,
-        category_choices=CATEGORY_CHOICES,
+        category_choices=category_choices_for(current_user.id),
         q=q,
         selected_category=category,
         month=month,
@@ -352,8 +356,9 @@ def entries_page():
 @bp.route("/budgets", methods=["GET", "POST"])
 @login_required
 def budgets_page():
+    expense_categories = get_expense_categories(current_user.id)
     if request.method == "POST":
-        for category in EXPENSE_CATEGORY_ORDER:
+        for category in expense_categories:
             raw_value = request.form.get(f"budget__{category}", "").strip()
             amount = parse_amount(raw_value) or 0
             budget = Budget.query.filter_by(user_id=current_user.id, category=category).first()
@@ -369,4 +374,56 @@ def budgets_page():
         b.category: b.monthly_amount
         for b in Budget.query.filter_by(user_id=current_user.id).all()
     }
-    return render_template("budgets.html", categories=EXPENSE_CATEGORY_ORDER, budgets=budgets)
+    return render_template("budgets.html", categories=expense_categories, budgets=budgets)
+
+
+@bp.route("/categories")
+@login_required
+def categories_page():
+    ensure_default_categories(current_user.id)
+    categories = Category.query.filter_by(user_id=current_user.id).order_by(Category.position).all()
+    return render_template("categories.html", categories=categories)
+
+
+@bp.route("/categories/add", methods=["POST"])
+@login_required
+def add_category():
+    name = request.form.get("name", "").strip()
+    if not name:
+        flash("카테고리 이름을 입력해주세요.", "error")
+        return redirect(url_for("ledger.categories_page"))
+    if name in (INCOME_CATEGORY, SAVINGS_CATEGORY):
+        flash(f'"{name}"은(는) 별도로 관리되는 카테고리라 추가할 수 없어요.', "error")
+        return redirect(url_for("ledger.categories_page"))
+    if Category.query.filter_by(user_id=current_user.id, name=name).first() is not None:
+        flash(f'"{name}" 카테고리가 이미 있어요.', "error")
+        return redirect(url_for("ledger.categories_page"))
+
+    max_position = (
+        db.session.query(db.func.max(Category.position)).filter_by(user_id=current_user.id).scalar() or 0
+    )
+    db.session.add(Category(user_id=current_user.id, name=name, position=max_position + 1))
+    db.session.commit()
+    flash(f'"{name}" 카테고리를 추가했습니다.', "success")
+    return redirect(url_for("ledger.categories_page"))
+
+
+@bp.route("/categories/<int:category_id>/delete", methods=["POST"])
+@login_required
+def delete_category(category_id):
+    category = Category.query.filter_by(id=category_id, user_id=current_user.id).first_or_404()
+    if category.is_protected:
+        flash(f'"{category.name}"은(는) 삭제할 수 없는 카테고리예요.', "error")
+        return redirect(url_for("ledger.categories_page"))
+
+    Entry.query.filter_by(user_id=current_user.id, category=category.name).update(
+        {"category": FALLBACK_CATEGORY}
+    )
+    LearnedCategory.query.filter_by(user_id=current_user.id, category=category.name).update(
+        {"category": FALLBACK_CATEGORY}
+    )
+    Budget.query.filter_by(user_id=current_user.id, category=category.name).delete()
+    db.session.delete(category)
+    db.session.commit()
+    flash(f'"{category.name}" 카테고리를 삭제했습니다. 관련 거래내역은 "기타"로 옮겨졌습니다.', "info")
+    return redirect(url_for("ledger.categories_page"))

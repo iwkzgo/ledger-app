@@ -88,6 +88,7 @@
                 {% if current_user.username in config.ADMIN_USERNAMES %}
                 <a href="{{ url_for('admin.users') }}" class="block px-4 py-2.5 text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700">관리자</a>
                 {% endif %}
+                <a href="{{ url_for('ledger.categories_page') }}" class="block px-4 py-2.5 text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700">카테고리 관리</a>
                 <a href="{{ url_for('auth.change_password') }}" class="block px-4 py-2.5 text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700">비밀번호 변경</a>
                 <form action="{{ url_for('auth.logout') }}" method="post">
                     <button type="submit" class="block w-full px-4 py-2.5 text-left text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10">로그아웃</button>

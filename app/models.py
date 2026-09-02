@@ -78,3 +78,15 @@ class SavingsGoal(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     month = db.Column(db.String(7), nullable=False)  # "YYYY-MM"
     target_amount = db.Column(db.Integer, nullable=False)
+
+
+class Category(db.Model):
+    __tablename__ = "categories"
+    __table_args__ = (db.UniqueConstraint("user_id", "name", name="uq_category_user_name"),)
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    name = db.Column(db.String(50), nullable=False)
+    position = db.Column(db.Integer, nullable=False, default=0)
+    # 고정지출/기타는 앱 로직(자동 기록, 미분류 처리)에 꼭 필요해서 삭제할 수 없게 막습니다.
+    is_protected = db.Column(db.Boolean, nullable=False, default=False)

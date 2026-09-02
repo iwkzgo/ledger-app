@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}카테고리 관리{% endblock %}
+{% block content %}
+<header class="mb-8">
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-50">🏷️ 카테고리 관리</h1>
+    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">지출 카테고리를 자유롭게 추가하거나 삭제할 수 있어요. "고정지출"과 "기타"는 앱에 꼭 필요해서 삭제할 수 없어요.</p>
+    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">카테고리를 삭제하면 그 카테고리로 분류돼 있던 거래내역은 자동으로 "기타"로 옮겨져요.</p>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% set flash_styles = {
+        'success': 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30',
+        'info': 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30',
+        'error': 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30',
+    } %}
+    <div class="mb-6 space-y-2">
+        {% for category, message in messages %}
+        <div class="rounded-xl border px-4 py-3 text-sm font-medium {{ flash_styles.get(category, 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-900/40 dark:text-slate-300 dark:border-slate-700') }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}
+
+<section class="mb-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
+    <form action="{{ url_for('ledger.add_category') }}" method="post" class="flex flex-col gap-3 sm:flex-row">
+        <input
+            type="text"
+            name="name"
+            placeholder="예: 반려동물"
+            required
+            class="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-indigo-500/20"
+        >
+        <button type="submit" class="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
+            카테고리 추가
+        </button>
+    </form>
+</section>
+
+<div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
+    <ul class="divide-y divide-slate-50 dark:divide-slate-700">
+        {% for category in categories %}
+        <li class="flex items-center justify-between px-5 py-3">
+            <span class="font-medium text-slate-700 dark:text-slate-200">{{ category.name }}</span>
+            {% if category.is_protected %}
+            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-400">보호됨</span>
+            {% else %}
+            <form action="{{ url_for('ledger.delete_category', category_id=category.id) }}" method="post">
+                <button type="submit" class="min-h-[2.5rem] rounded-lg bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/20">삭제</button>
+            </form>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<p class="mt-6">
+    <a href="{{ url_for('ledger.index') }}" class="text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-400">← 가계부로 돌아가기</a>
+</p>
+{% endblock %}
