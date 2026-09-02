@@ -13,6 +13,7 @@ from .aggregator import (
     build_expense_forecast,
     build_monthly_summary,
     build_savings_goal_status,
+    build_today_summary,
     build_weekly_pattern,
     current_month,
 )
@@ -84,6 +85,7 @@ def index():
         weekly_chart=build_line_chart(weekly_pattern),
         weekly_total=sum(day["amount"] for day in weekly_pattern),
         expense_forecast=build_expense_forecast(current_user.id),
+        today_summary=build_today_summary(current_user.id),
     )
 
 

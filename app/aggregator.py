@@ -99,6 +99,29 @@ def build_monthly_summary(user_id: int) -> List[Dict]:
     return summary
 
 
+def build_today_summary(user_id: int) -> Dict:
+    """오늘(KST) 하루 지출 합계를 계산합니다."""
+    today = to_kst(datetime.now()).date()
+    range_start = datetime.combine(today, datetime.min.time()) - KST_OFFSET
+    range_end = range_start + timedelta(days=1)
+
+    entries = Entry.query.filter(
+        Entry.user_id == user_id,
+        Entry.created_at >= range_start,
+        Entry.created_at < range_end,
+    ).all()
+
+    total = 0
+    count = 0
+    for entry in entries:
+        if entry.category in (INCOME_CATEGORY, SAVINGS_CATEGORY):
+            continue
+        total += entry.amount
+        count += 1
+
+    return {"date": today.strftime("%m-%d"), "total": total, "count": count}
+
+
 def build_weekly_pattern(user_id: int) -> List[Dict]:
     """이번 주(월~일) 요일별 지출 합계를 KST 기준으로 계산합니다."""
     today = to_kst(datetime.now()).date()

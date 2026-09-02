@@ -52,6 +52,16 @@
 </section>
 
 <section class="mb-10">
+    <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
+        <p class="text-sm text-slate-500 dark:text-slate-400">오늘({{ today_summary.date }}) 지출</p>
+        <p class="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-50">{{ "{:,}".format(today_summary.total) }}원</p>
+        <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">
+            {% if today_summary.count > 0 %}{{ today_summary.count }}건 입력{% else %}아직 오늘 입력한 지출이 없어요.{% endif %}
+        </p>
+    </div>
+</section>
+
+<section class="mb-10">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 class="text-lg font-bold text-slate-900 dark:text-slate-50">이번 달({{ current_month }}) 예산 현황</h2>
         <div class="flex items-center gap-3">
