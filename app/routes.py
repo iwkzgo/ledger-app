@@ -10,6 +10,7 @@ from openpyxl.chart import PieChart, Reference
 from .aggregator import (
     build_budget_status,
     build_calendar_month,
+    build_expense_forecast,
     build_monthly_summary,
     build_savings_goal_status,
     build_weekly_pattern,
@@ -82,6 +83,7 @@ def index():
         savings_goal=build_savings_goal_status(current_user.id, current_month()),
         weekly_chart=build_line_chart(weekly_pattern),
         weekly_total=sum(day["amount"] for day in weekly_pattern),
+        expense_forecast=build_expense_forecast(current_user.id),
     )
 
 

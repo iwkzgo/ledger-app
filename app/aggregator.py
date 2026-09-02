@@ -279,3 +279,30 @@ def build_budget_status(user_id: int, month: Optional[str] = None) -> List[Dict]
             }
         )
     return status
+
+
+def build_expense_forecast(user_id: int) -> Optional[Dict]:
+    """이번 달 지금까지의 지출 속도를 기준으로 월말 예상 총 지출을 계산합니다."""
+    today = datetime.now()
+    days_in_month = pycalendar.monthrange(today.year, today.month)[1]
+    days_elapsed = today.day
+    month = today.strftime("%Y-%m")
+
+    totals = _category_totals_for_month(user_id, month)
+    current_total = sum(totals.values())
+    if current_total <= 0:
+        return None
+
+    daily_average = current_total / days_elapsed
+    projected_total = round(daily_average * days_in_month)
+
+    total_budget = sum(b.monthly_amount for b in Budget.query.filter_by(user_id=user_id).all())
+
+    return {
+        "current_total": current_total,
+        "projected_total": projected_total,
+        "days_elapsed": days_elapsed,
+        "days_in_month": days_in_month,
+        "total_budget": total_budget,
+        "over_budget": total_budget > 0 and projected_total > total_budget,
+    }

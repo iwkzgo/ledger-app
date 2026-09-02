@@ -112,6 +112,31 @@
     {% endif %}
 </section>
 
+{% if expense_forecast %}
+<section class="mb-10">
+    <h2 class="mb-4 text-lg font-bold text-slate-900 dark:text-slate-50">이번 달 지출 예측</h2>
+    <div class="rounded-2xl bg-white p-5 sm:p-6 shadow-sm ring-1 {{ 'ring-rose-200 dark:ring-rose-500/30' if expense_forecast.over_budget else 'ring-slate-100 dark:ring-slate-700' }} dark:bg-slate-800">
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+            {{ expense_forecast.days_elapsed }}일째 {{ "{:,}".format(expense_forecast.current_total) }}원 지출 중이에요.
+        </p>
+        <p class="mt-1 text-lg">
+            이대로 가면 이번 달 총
+            <span class="font-bold {{ 'text-rose-600 dark:text-rose-400' if expense_forecast.over_budget else 'text-slate-900 dark:text-slate-50' }}">{{ "{:,}".format(expense_forecast.projected_total) }}원</span>
+            정도 쓸 것 같아요.
+        </p>
+        {% if expense_forecast.total_budget > 0 %}
+        <p class="mt-2 text-xs {{ 'text-rose-600 dark:text-rose-400' if expense_forecast.over_budget else 'text-slate-400 dark:text-slate-500' }}">
+            {% if expense_forecast.over_budget %}
+            ⚠️ 설정한 예산 합계({{ "{:,}".format(expense_forecast.total_budget) }}원)를 넘을 것으로 예상돼요.
+            {% else %}
+            예산 합계 {{ "{:,}".format(expense_forecast.total_budget) }}원 안에서 지출 중이에요.
+            {% endif %}
+        </p>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
 <section class="mb-10">
     <h2 class="mb-4 text-lg font-bold text-slate-900 dark:text-slate-50">이번 달({{ current_month }}) 저축 목표</h2>
     {% set goal_theme = {
