@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
-from flask_login import login_required, login_user, logout_user
+from flask_login import current_user, login_required, login_user, logout_user
 
 from .extensions import db
 from .models import User
@@ -55,6 +55,32 @@ def login():
         return redirect(url_for("ledger.index"))
 
     return render_template("login.html")
+
+
+@bp.route("/account/password", methods=["GET", "POST"])
+@login_required
+def change_password():
+    if request.method == "POST":
+        current_password = request.form.get("current_password", "")
+        new_password = request.form.get("new_password", "")
+        confirm = request.form.get("confirm", "")
+
+        if not current_user.check_password(current_password):
+            flash("현재 비밀번호가 올바르지 않습니다.", "error")
+            return redirect(url_for("auth.change_password"))
+        if not new_password:
+            flash("새 비밀번호를 입력해주세요.", "error")
+            return redirect(url_for("auth.change_password"))
+        if new_password != confirm:
+            flash("새 비밀번호가 서로 일치하지 않습니다.", "error")
+            return redirect(url_for("auth.change_password"))
+
+        current_user.set_password(new_password)
+        db.session.commit()
+        flash("비밀번호를 변경했습니다.", "success")
+        return redirect(url_for("ledger.index"))
+
+    return render_template("change_password.html")
 
 
 @bp.route("/logout", methods=["POST"])

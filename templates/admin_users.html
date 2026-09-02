@@ -6,13 +6,33 @@
     <p class="mt-1 text-sm text-slate-500">총 {{ users|length }}명</p>
 </header>
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% set flash_styles = {
+        'success': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        'info': 'bg-blue-50 text-blue-700 border-blue-200',
+        'warning': 'bg-amber-50 text-amber-700 border-amber-200',
+        'danger': 'bg-rose-50 text-rose-700 border-rose-200',
+        'error': 'bg-rose-50 text-rose-700 border-rose-200',
+    } %}
+    <div class="mb-6 space-y-2">
+        {% for category, message in messages %}
+        <div class="rounded-xl border px-4 py-3 text-sm font-medium {{ flash_styles.get(category, 'bg-slate-50 text-slate-700 border-slate-200') }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}
+
 <div class="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
-    <table class="w-full min-w-[420px] text-sm">
+    <table class="w-full min-w-[560px] text-sm">
         <thead>
             <tr class="border-b border-slate-100 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
                 <th class="px-5 py-3">아이디</th>
                 <th class="px-5 py-3">가입일</th>
                 <th class="px-5 py-3">최근 접속일</th>
+                <th class="px-5 py-3"></th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-50">
@@ -22,6 +42,11 @@
                 <td class="px-5 py-3 text-slate-500">{{ (user.created_at | kst).strftime("%Y-%m-%d %H:%M") }}</td>
                 <td class="px-5 py-3 text-slate-500">
                     {% if user.last_login_at %}{{ (user.last_login_at | kst).strftime("%Y-%m-%d %H:%M") }}{% else %}-{% endif %}
+                </td>
+                <td class="px-5 py-3 text-right">
+                    <form action="{{ url_for('admin.reset_password', user_id=user.id) }}" method="post">
+                        <button type="submit" class="min-h-[2.5rem] rounded-lg bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100">🔑 비밀번호 초기화</button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}
