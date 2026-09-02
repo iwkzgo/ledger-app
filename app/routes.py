@@ -173,28 +173,35 @@ def edit_entry(entry_id):
     if not next_url.startswith("/"):
         next_url = url_for("ledger.index")
 
+    choices = category_choices_for(current_user.id)
+
     if request.method == "POST":
         item = request.form.get("item", "").strip()
         amount_raw = request.form.get("amount", "").strip()
+        category = request.form.get("category", "").strip()
         try:
             amount = int(amount_raw)
         except ValueError:
             amount = None
 
-        if not item or not amount or amount <= 0:
-            flash("항목과 금액을 올바르게 입력해주세요.", "error")
+        if not item or not amount or amount <= 0 or category not in choices:
+            flash("항목, 금액, 카테고리를 올바르게 입력해주세요.", "error")
             return render_template(
                 "edit_entry.html",
                 entry=entry,
                 next_url=next_url,
                 form_item=item,
                 form_amount=amount_raw,
+                form_category=category or entry.category,
+                category_choices=choices,
             )
 
         entry.item = item
         entry.amount = amount
+        entry.category = category
         db.session.commit()
-        flash(f'수정했습니다: {item} · {amount:,}원', "success")
+        learn_category(item, category, current_user.id)
+        flash(f'수정했습니다: {item} · {amount:,}원 · {category}', "success")
         return redirect(next_url)
 
     return render_template(
@@ -203,6 +210,8 @@ def edit_entry(entry_id):
         next_url=next_url,
         form_item=entry.item,
         form_amount=entry.amount,
+        form_category=entry.category,
+        category_choices=choices,
     )
 
 
