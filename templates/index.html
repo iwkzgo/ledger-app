@@ -305,24 +305,6 @@
 </section>
 
 <section class="mb-10">
-    <h2 class="mb-4 text-lg font-bold text-slate-900 dark:text-slate-50">지출 내역 다운로드</h2>
-    <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
-        <p class="mb-3 text-xs text-slate-400 dark:text-slate-500">엑셀 파일로 내려받으면 "카테고리별 요약" 시트에 원형 그래프가 같이 들어있어요.</p>
-        <form action="{{ url_for('ledger.export_csv') }}" method="get" class="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <label class="text-sm text-slate-500 dark:text-slate-400">월 선택(비우면 전체 기간)</label>
-            <input
-                type="month"
-                name="month"
-                class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-500/20"
-            >
-            <button type="submit" class="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
-                📊 엑셀 다운로드
-            </button>
-        </form>
-    </div>
-</section>
-
-<section>
     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 class="text-lg font-bold text-slate-900 dark:text-slate-50">최근 입력 내역</h2>
         <a href="{{ url_for('ledger.entries_page') }}" class="text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-400">📋 전체 내역 보기 →</a>
@@ -365,6 +347,24 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+</section>
+
+<section class="mt-10">
+    <h2 class="mb-4 text-lg font-bold text-slate-900 dark:text-slate-50">지출 내역 다운로드</h2>
+    <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
+        <p class="mb-3 text-xs text-slate-400 dark:text-slate-500">엑셀 파일로 내려받으면 "카테고리별 요약" 시트에 원형 그래프가 같이 들어있어요.</p>
+        <form action="{{ url_for('ledger.export_csv') }}" method="get" class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <label class="text-sm text-slate-500 dark:text-slate-400">월 선택(비우면 전체 기간)</label>
+            <input
+                type="month"
+                name="month"
+                class="rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-500/20"
+            >
+            <button type="submit" class="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
+                📊 엑셀 다운로드
+            </button>
+        </form>
     </div>
 </section>
 {% endblock %}
