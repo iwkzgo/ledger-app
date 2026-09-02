@@ -292,12 +292,30 @@ def build_budget_status(user_id: int, month: Optional[str] = None) -> List[Dict]
 
 def build_expense_forecast(user_id: int) -> Optional[Dict]:
     """이번 달 지금까지의 지출 속도를 기준으로 월말 예상 총 지출을 계산합니다."""
-    today = datetime.now()
+    today = to_kst(datetime.now()).date()
     days_in_month = pycalendar.monthrange(today.year, today.month)[1]
     days_elapsed = today.day
     month = today.strftime("%Y-%m")
 
-    totals = _category_totals_for_month(user_id, month)
+    month_start_date = today.replace(day=1)
+    if today.month == 12:
+        next_month_date = month_start_date.replace(year=today.year + 1, month=1)
+    else:
+        next_month_date = month_start_date.replace(month=today.month + 1)
+    range_start = datetime.combine(month_start_date, datetime.min.time()) - KST_OFFSET
+    range_end = datetime.combine(next_month_date, datetime.min.time()) - KST_OFFSET
+
+    totals: Dict[str, int] = defaultdict(int)
+    entries = Entry.query.filter(
+        Entry.user_id == user_id,
+        Entry.created_at >= range_start,
+        Entry.created_at < range_end,
+    ).all()
+    for entry in entries:
+        if entry.category in (INCOME_CATEGORY, SAVINGS_CATEGORY):
+            continue
+        totals[entry.category] += entry.amount
+
     current_total = sum(totals.values())
     if current_total <= 0:
         return None
