@@ -96,6 +96,9 @@ def create_entry():
     if not raw_text:
         flash("입력할 내용이 없습니다.", "error")
         return redirect(url_for("ledger.index"))
+    if len(raw_text) > 255:
+        flash("입력한 내용이 너무 깁니다. 255자 이하로 입력해주세요.", "error")
+        return redirect(url_for("ledger.index"))
 
     parsed = parse_entry(raw_text)
     if parsed is None:
@@ -131,10 +134,27 @@ def create_entry():
 @bp.route("/entry/confirm", methods=["POST"])
 @login_required
 def confirm_entry():
-    raw_text = request.form.get("raw_text", "")
-    item = request.form.get("item", "")
-    amount = int(request.form.get("amount", "0"))
-    category = request.form.get("category", FALLBACK_CATEGORY)
+    raw_text = request.form.get("raw_text", "").strip()
+    item = request.form.get("item", "").strip()
+    amount_raw = request.form.get("amount", "").strip()
+    category = request.form.get("category", "").strip()
+
+    try:
+        amount = int(amount_raw)
+    except ValueError:
+        amount = None
+
+    valid_categories = category_choices_for(current_user.id)
+    if (
+        not item
+        or not amount
+        or amount <= 0
+        or category not in valid_categories
+        or len(raw_text) > 255
+        or len(item) > 255
+    ):
+        flash("항목, 금액, 카테고리를 올바르게 입력해주세요.", "error")
+        return redirect(url_for("ledger.index"))
 
     db.session.add(
         Entry(user_id=current_user.id, raw_text=raw_text, item=item, amount=amount, category=category)
@@ -161,7 +181,9 @@ def delete_entry(entry_id):
 def edit_entry(entry_id):
     entry = Entry.query.filter_by(id=entry_id, user_id=current_user.id).first_or_404()
     next_url = request.values.get("next") or url_for("ledger.index")
-    if not next_url.startswith("/"):
+    # "//evil.com"이나 "/\evil.com"처럼 "/"로 시작하지만 브라우저가 다른 도메인으로
+    # 해석하는 프로토콜 상대 URL(open redirect)을 걸러냅니다.
+    if not next_url.startswith("/") or next_url.startswith("//") or next_url.startswith("/\\"):
         next_url = url_for("ledger.index")
 
     choices = category_choices_for(current_user.id)
@@ -176,7 +198,14 @@ def edit_entry(entry_id):
         except ValueError:
             amount = None
 
-        if not item or not amount or amount <= 0 or category not in choices:
+        if (
+            not item
+            or not amount
+            or amount <= 0
+            or category not in choices
+            or len(item) > 255
+            or len(memo) > 255
+        ):
             flash("항목, 금액, 카테고리를 올바르게 입력해주세요.", "error")
             return render_template(
                 "edit_entry.html",
