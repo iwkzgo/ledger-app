@@ -70,7 +70,10 @@
             {% for entry in entries %}
             <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-700/40">
                 <td class="whitespace-nowrap px-5 py-3 text-slate-400 dark:text-slate-500">{{ (entry.created_at | kst).strftime("%Y-%m-%d %H:%M") }}</td>
-                <td class="px-5 py-3 font-medium text-slate-700 dark:text-slate-200">{{ entry.item }}</td>
+                <td class="px-5 py-3 font-medium text-slate-700 dark:text-slate-200">
+                    {{ entry.item }}
+                    {% if entry.memo %}<div class="mt-0.5 text-xs font-normal text-slate-400 dark:text-slate-500">{{ entry.memo }}</div>{% endif %}
+                </td>
                 <td class="px-5 py-3 text-right text-slate-700 dark:text-slate-200">{{ "{:,}".format(entry.amount) }}원</td>
                 <td class="px-5 py-3">
                     <span class="font-medium text-slate-700 dark:text-slate-200">{{ entry.category }}</span>

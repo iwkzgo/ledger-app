@@ -34,6 +34,7 @@ class Entry(db.Model):
     item = db.Column(db.String(255), nullable=False)
     amount = db.Column(db.Integer, nullable=False)
     category = db.Column(db.String(50), nullable=False)
+    memo = db.Column(db.String(255), nullable=True)
 
 
 class Budget(db.Model):

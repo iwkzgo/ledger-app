@@ -172,6 +172,7 @@ def edit_entry(entry_id):
         item = request.form.get("item", "").strip()
         amount_raw = request.form.get("amount", "").strip()
         category = request.form.get("category", "").strip()
+        memo = request.form.get("memo", "").strip()
         try:
             amount = int(amount_raw)
         except ValueError:
@@ -186,12 +187,14 @@ def edit_entry(entry_id):
                 form_item=item,
                 form_amount=amount_raw,
                 form_category=category or entry.category,
+                form_memo=memo,
                 category_choices=choices,
             )
 
         entry.item = item
         entry.amount = amount
         entry.category = category
+        entry.memo = memo or None
         db.session.commit()
         learn_category(item, category, current_user.id)
         flash(f'수정했습니다: {item} · {amount:,}원 · {category}', "success")
@@ -204,6 +207,7 @@ def edit_entry(entry_id):
         form_item=entry.item,
         form_amount=entry.amount,
         form_category=entry.category,
+        form_memo=entry.memo or "",
         category_choices=choices,
     )
 
