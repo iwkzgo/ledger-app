@@ -58,8 +58,13 @@ def build_monthly_summary(user_id: int) -> List[Dict]:
         }
 
         expense_slices = build_donut_segments(ordered_categories)
-        for slice_info in expense_slices:
-            slice_info["breakdown"] = build_category_breakdown(user_id, slice_info["category"], month)
+        for index, slice_info in enumerate(expense_slices):
+            slice_info["key"] = index
+            breakdown = build_category_breakdown(user_id, slice_info["category"], month)
+            slice_info["breakdown"] = breakdown
+            slice_info["item_slices"] = build_donut_segments(
+                {item["item"]: item["amount"] for item in breakdown}
+            )
 
         summary.append(
             {

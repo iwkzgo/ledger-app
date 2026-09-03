@@ -250,6 +250,82 @@
     {% endif %}
 {% endmacro %}
 
+{% macro render_expense_donut(slices, empty_message, month) %}
+    {% if slices %}
+    <div class="flex flex-col gap-6 pt-4 lg:flex-row lg:items-start lg:justify-center">
+        <div class="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-center">
+            <svg width="160" height="160" viewBox="0 0 160 160" class="shrink-0">
+                <g transform="rotate(-90 80 80)">
+                    {% for slice in slices %}
+                    <circle
+                        cx="80" cy="80" r="60" fill="none"
+                        stroke="{{ slice.color }}" stroke-width="26"
+                        stroke-dasharray="{{ slice.dasharray }}"
+                        stroke-dashoffset="{{ slice.dashoffset }}"
+                        class="cursor-pointer"
+                        onclick='showItemDonut({{ month|tojson }}, {{ slice.key|tojson }})'
+                    ><title>{{ slice.category }} {{ "{:,}".format(slice.value) }}원 ({{ slice.percent }}%){% if slice.breakdown %}
+{% for item in slice.breakdown %}{{ item.item }} {{ "{:,}".format(item.amount) }}원{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}</title></circle>
+                    {% endfor %}
+                </g>
+            </svg>
+            <div class="w-full max-w-xs space-y-2 sm:max-w-sm">
+                {% for slice in slices|sort(attribute='value', reverse=True) %}
+                <div
+                    class="flex cursor-pointer items-center gap-3 rounded-xl bg-slate-50 px-3 py-2 transition hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800"
+                    onclick='showItemDonut({{ month|tojson }}, {{ slice.key|tojson }})'
+                >
+                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700">{{ loop.index }}</span>
+                    <span class="h-2.5 w-2.5 shrink-0 rounded-full" style="background:{{ slice.color }}"></span>
+                    <span class="flex-1 truncate text-sm font-medium text-slate-700 dark:text-slate-200">{{ slice.category }}</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-slate-50">{{ "{:,}".format(slice.value) }}원</span>
+                    <span class="w-12 shrink-0 text-right text-xs text-slate-400 dark:text-slate-500">{{ slice.percent }}%</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="w-full max-w-xs shrink-0 sm:max-w-sm lg:w-60">
+            <div id="item-donut-{{ month }}-placeholder" class="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400 dark:border-slate-700 dark:text-slate-500">
+                카테고리를 클릭하면 항목별 내역을 볼 수 있어요.
+            </div>
+            {% for slice in slices %}
+            <div id="item-donut-{{ month }}-{{ slice.key }}" class="hidden" data-item-donut-month="{{ month }}">
+                <p class="mb-3 text-center text-sm font-semibold text-slate-700 dark:text-slate-200">{{ slice.category }} 항목별 내역</p>
+                {% if slice.item_slices %}
+                <div class="flex flex-col items-center gap-4">
+                    <svg width="120" height="120" viewBox="0 0 160 160" class="shrink-0">
+                        <g transform="rotate(-90 80 80)">
+                            {% for item_slice in slice.item_slices %}
+                            <circle
+                                cx="80" cy="80" r="60" fill="none"
+                                stroke="{{ item_slice.color }}" stroke-width="26"
+                                stroke-dasharray="{{ item_slice.dasharray }}"
+                                stroke-dashoffset="{{ item_slice.dashoffset }}"
+                            ><title>{{ item_slice.category }} {{ "{:,}".format(item_slice.value) }}원 ({{ item_slice.percent }}%)</title></circle>
+                            {% endfor %}
+                        </g>
+                    </svg>
+                    <div class="w-full space-y-1.5">
+                        {% for item_slice in slice.item_slices|sort(attribute='value', reverse=True) %}
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="h-2 w-2 shrink-0 rounded-full" style="background:{{ item_slice.color }}"></span>
+                            <span class="flex-1 truncate text-slate-600 dark:text-slate-300">{{ item_slice.category }}</span>
+                            <span class="font-semibold text-slate-700 dark:text-slate-200">{{ "{:,}".format(item_slice.value) }}원</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <p class="py-8 text-center text-sm text-slate-400 dark:text-slate-500">{{ empty_message }}</p>
+    {% endif %}
+{% endmacro %}
+
 <section class="mb-10">
     <h2 class="mb-4 text-lg font-bold text-slate-900 dark:text-slate-50">이번 주 소비 패턴</h2>
     <div class="rounded-2xl bg-white p-5 sm:p-6 shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
@@ -348,7 +424,7 @@
                 <label for="tab-{{ row.month }}-savings" class="flex-1 cursor-pointer rounded-full bg-slate-100 py-2.5 text-center text-sm font-semibold text-slate-500 peer-checked/savings:bg-indigo-600 peer-checked/savings:text-white dark:bg-slate-700 dark:text-slate-400">저축</label>
 
                 <div class="hidden w-full peer-checked/expense:block">
-                    {{ render_donut(row.expense_slices, "이 달은 지출 내역이 없습니다.") }}
+                    {{ render_expense_donut(row.expense_slices, "이 달은 지출 내역이 없습니다.", row.month) }}
                 </div>
                 <div class="hidden w-full peer-checked/income:block">
                     {{ render_donut(row.income_slices, "이 달은 수입 내역이 없습니다.") }}
@@ -422,4 +498,16 @@
         </form>
     </div>
 </section>
+
+<script>
+    function showItemDonut(month, key) {
+        var placeholder = document.getElementById('item-donut-' + month + '-placeholder');
+        if (placeholder) placeholder.classList.add('hidden');
+        document.querySelectorAll('[data-item-donut-month="' + month + '"]').forEach(function (el) {
+            el.classList.add('hidden');
+        });
+        var target = document.getElementById('item-donut-' + month + '-' + key);
+        if (target) target.classList.remove('hidden');
+    }
+</script>
 {% endblock %}
