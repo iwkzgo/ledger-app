@@ -18,6 +18,17 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     app.jinja_env.filters["kst"] = to_kst
 
+    try:
+        icon_version = int(os.path.getmtime(os.path.join(app.static_folder, "icons", "icon-512.png")))
+    except OSError:
+        icon_version = 0
+
+    @app.context_processor
+    def inject_icon_version():
+        # 아이콘 파일이 바뀔 때마다 URL의 쿼리스트링도 바뀌게 해서,
+        # 브라우저가 예전 파비콘을 계속 캐시해서 안 바뀌는 문제를 막습니다.
+        return {"icon_version": icon_version}
+
     db.init_app(app)
     csrf.init_app(app)
     login_manager.init_app(app)
