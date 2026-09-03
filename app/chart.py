@@ -13,8 +13,10 @@ CIRCUMFERENCE = 2 * math.pi * RADIUS
 
 
 LINE_CHART_WIDTH = 320
-LINE_CHART_HEIGHT = 120
+LINE_CHART_PLOT_HEIGHT = 120
 LINE_CHART_PADDING = 12
+LINE_CHART_LABEL_SPACE = 20
+LINE_CHART_HEIGHT = LINE_CHART_PLOT_HEIGHT + LINE_CHART_LABEL_SPACE
 
 
 def build_line_chart(daily_totals: List[Dict]) -> Dict:
@@ -23,7 +25,7 @@ def build_line_chart(daily_totals: List[Dict]) -> Dict:
     max_amount = max(amounts) if max(amounts, default=0) > 0 else 1
     count = len(daily_totals)
     usable_width = LINE_CHART_WIDTH - 2 * LINE_CHART_PADDING
-    usable_height = LINE_CHART_HEIGHT - 2 * LINE_CHART_PADDING
+    usable_height = LINE_CHART_PLOT_HEIGHT - 2 * LINE_CHART_PADDING
 
     dots = []
     for index, day in enumerate(daily_totals):
@@ -33,6 +35,7 @@ def build_line_chart(daily_totals: List[Dict]) -> Dict:
             {
                 "x": round(x, 1),
                 "y": round(y, 1),
+                "label_y": LINE_CHART_PLOT_HEIGHT + 14,
                 "label": day["label"],
                 "amount": day["amount"],
                 "is_today": day["is_today"],
