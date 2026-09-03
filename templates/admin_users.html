@@ -67,6 +67,7 @@
                 </td>
                 <td class="px-5 py-3 text-right">
                     <form action="{{ url_for('admin.reset_password', user_id=user.id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="min-h-[2.5rem] rounded-lg bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20">🔑 비밀번호 초기화</button>
                     </form>
                 </td>

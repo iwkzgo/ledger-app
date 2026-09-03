@@ -3,7 +3,7 @@ import os
 from flask import Flask, send_from_directory
 
 from .config import Config
-from .extensions import db, login_manager
+from .extensions import csrf, db, login_manager
 from .timeutil import to_kst
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,6 +19,7 @@ def create_app(config_class=Config):
     app.jinja_env.filters["kst"] = to_kst
 
     db.init_app(app)
+    csrf.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
     login_manager.login_message = "로그인이 필요합니다."
