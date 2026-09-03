@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}가계부{% endblock %}
 {% block content %}
+<div id="chart-tooltip" class="pointer-events-none fixed z-50 hidden max-w-[220px] -translate-x-1/2 -translate-y-[calc(100%+10px)] whitespace-pre-line rounded-lg bg-slate-900 px-3 py-2 text-xs leading-relaxed text-white shadow-lg"></div>
 <header class="mb-8 flex flex-wrap items-center justify-between gap-3">
     <div>
         <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-50">🧾 가계부</h1>
@@ -223,13 +224,17 @@
         <svg width="160" height="160" viewBox="0 0 160 160" class="shrink-0">
             <g transform="rotate(-90 80 80)">
                 {% for slice in slices %}
+                {% set tooltip_text %}{{ slice.category }} {{ "{:,}".format(slice.value) }}원 ({{ slice.percent }}%){% if slice.breakdown %}
+{% for item in slice.breakdown %}{{ item.item }} {{ "{:,}".format(item.amount) }}원{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}{% endset %}
                 <circle
                     cx="80" cy="80" r="60" fill="none"
                     stroke="{{ slice.color }}" stroke-width="26"
                     stroke-dasharray="{{ slice.dasharray }}"
                     stroke-dashoffset="{{ slice.dashoffset }}"
-                ><title>{{ slice.category }} {{ "{:,}".format(slice.value) }}원 ({{ slice.percent }}%){% if slice.breakdown %}
-{% for item in slice.breakdown %}{{ item.item }} {{ "{:,}".format(item.amount) }}원{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}</title></circle>
+                    class="cursor-pointer"
+                    onmouseenter='showChartTooltip(event, {{ tooltip_text|trim|tojson }})'
+                    onmouseleave='hideChartTooltip()'
+                ></circle>
                 {% endfor %}
             </g>
         </svg>
@@ -252,11 +257,13 @@
 
 {% macro render_expense_donut(slices, empty_message, month) %}
     {% if slices %}
-    <div class="flex flex-col gap-6 pt-4 lg:flex-row lg:items-start lg:justify-center lg:gap-14">
+    <div class="flex flex-col items-center gap-6 pt-4 lg:flex-row lg:items-start lg:justify-center lg:gap-14">
         <div class="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-center">
             <svg width="160" height="160" viewBox="0 0 160 160" class="shrink-0">
                 <g transform="rotate(-90 80 80)">
                     {% for slice in slices %}
+                    {% set tooltip_text %}{{ slice.category }} {{ "{:,}".format(slice.value) }}원 ({{ slice.percent }}%){% if slice.breakdown %}
+{% for item in slice.breakdown %}{{ item.item }} {{ "{:,}".format(item.amount) }}원{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}{% endset %}
                     <circle
                         cx="80" cy="80" r="60" fill="none"
                         stroke="{{ slice.color }}" stroke-width="26"
@@ -264,8 +271,9 @@
                         stroke-dashoffset="{{ slice.dashoffset }}"
                         class="cursor-pointer"
                         onclick='showItemDonut({{ month|tojson }}, {{ slice.key|tojson }})'
-                    ><title>{{ slice.category }} {{ "{:,}".format(slice.value) }}원 ({{ slice.percent }}%){% if slice.breakdown %}
-{% for item in slice.breakdown %}{{ item.item }} {{ "{:,}".format(item.amount) }}원{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}</title></circle>
+                        onmouseenter='showChartTooltip(event, {{ tooltip_text|trim|tojson }})'
+                        onmouseleave='hideChartTooltip()'
+                    ></circle>
                     {% endfor %}
                 </g>
             </svg>
@@ -297,12 +305,16 @@
                     <svg width="120" height="120" viewBox="0 0 160 160" class="shrink-0">
                         <g transform="rotate(-90 80 80)">
                             {% for item_slice in slice.item_slices %}
+                            {% set item_tooltip_text %}{{ item_slice.category }} {{ "{:,}".format(item_slice.value) }}원 ({{ item_slice.percent }}%){% endset %}
                             <circle
                                 cx="80" cy="80" r="60" fill="none"
                                 stroke="{{ item_slice.color }}" stroke-width="26"
                                 stroke-dasharray="{{ item_slice.dasharray }}"
                                 stroke-dashoffset="{{ item_slice.dashoffset }}"
-                            ><title>{{ item_slice.category }} {{ "{:,}".format(item_slice.value) }}원 ({{ item_slice.percent }}%)</title></circle>
+                                class="cursor-pointer"
+                                onmouseenter='showChartTooltip(event, {{ item_tooltip_text|trim|tojson }})'
+                                onmouseleave='hideChartTooltip()'
+                            ></circle>
                             {% endfor %}
                         </g>
                     </svg>
@@ -341,13 +353,16 @@
                 stroke-linejoin="round"
             />
             {% for dot in weekly_chart.dots %}
+            {% set dot_tooltip_text %}{{ dot.label }}요일 {{ "{:,}".format(dot.amount) }}원{% if dot.categories %}
+{% for cat, amt in dot.categories.items() %}{{ cat }} {{ "{:,}".format(amt) }}원{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}{% endset %}
             <circle
                 cx="{{ dot.x }}" cy="{{ dot.y }}"
                 r="12"
                 fill="transparent"
                 class="cursor-pointer"
-            ><title>{{ dot.label }}요일 {{ "{:,}".format(dot.amount) }}원{% if dot.categories %}
-{% for cat, amt in dot.categories.items() %}{{ cat }} {{ "{:,}".format(amt) }}원{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}</title></circle>
+                onmouseenter='showChartTooltip(event, {{ dot_tooltip_text|trim|tojson }})'
+                onmouseleave='hideChartTooltip()'
+            ></circle>
             {% endfor %}
             {% for dot in weekly_chart.dots %}
             <circle
@@ -512,6 +527,21 @@
         });
         var target = document.getElementById('item-donut-' + month + '-' + key);
         if (target) target.classList.remove('hidden');
+    }
+
+    function showChartTooltip(event, text) {
+        var tooltip = document.getElementById('chart-tooltip');
+        if (!tooltip) return;
+        tooltip.textContent = text;
+        var rect = event.currentTarget.getBoundingClientRect();
+        tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+        tooltip.style.top = rect.top + 'px';
+        tooltip.classList.remove('hidden');
+    }
+
+    function hideChartTooltip() {
+        var tooltip = document.getElementById('chart-tooltip');
+        if (tooltip) tooltip.classList.add('hidden');
     }
 </script>
 {% endblock %}
