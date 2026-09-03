@@ -36,7 +36,7 @@ def sync_recurring_items(user_id: int) -> List[str]:
         month_cursor = (
             _next_month(recurring.last_recorded_month)
             if recurring.last_recorded_month
-            else recurring.created_at.strftime("%Y-%m")
+            else to_kst(recurring.created_at).strftime("%Y-%m")
         )
 
         while month_cursor <= current_month:

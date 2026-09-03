@@ -23,7 +23,7 @@ from .chart import build_line_chart
 from .extensions import db
 from .models import Budget, Category, Entry, LearnedCategory, SavingsGoal
 from .recurring import sync_recurring_items
-from .timeutil import to_kst
+from .timeutil import KST_OFFSET, to_kst
 from .rules import (
     FALLBACK_CATEGORY,
     FIXED_EXPENSE_CATEGORY,
@@ -236,8 +236,8 @@ def export_csv():
     if month:
         try:
             year, mon = map(int, month.split("-"))
-            start = datetime(year, mon, 1)
-            end = datetime(year + 1, 1, 1) if mon == 12 else datetime(year, mon + 1, 1)
+            start = datetime(year, mon, 1) - KST_OFFSET
+            end = (datetime(year + 1, 1, 1) if mon == 12 else datetime(year, mon + 1, 1)) - KST_OFFSET
             query = query.filter(Entry.created_at >= start, Entry.created_at < end)
             filename = f"{year}년_{mon}월_가계부.xlsx"
         except ValueError:
@@ -335,8 +335,8 @@ def entries_page():
     if month:
         try:
             year, mon = map(int, month.split("-"))
-            start = datetime(year, mon, 1)
-            end = datetime(year + 1, 1, 1) if mon == 12 else datetime(year, mon + 1, 1)
+            start = datetime(year, mon, 1) - KST_OFFSET
+            end = (datetime(year + 1, 1, 1) if mon == 12 else datetime(year, mon + 1, 1)) - KST_OFFSET
             query = query.filter(Entry.created_at >= start, Entry.created_at < end)
         except ValueError:
             flash(f'"{month}"은(는) 올바른 월 형식이 아니에요.', "error")

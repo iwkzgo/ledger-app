@@ -16,7 +16,7 @@ OVER_THRESHOLD = 100
 
 
 def current_month() -> str:
-    return datetime.now().strftime("%Y-%m")
+    return to_kst(datetime.now()).strftime("%Y-%m")
 
 
 def build_monthly_summary(user_id: int) -> List[Dict]:
@@ -26,7 +26,7 @@ def build_monthly_summary(user_id: int) -> List[Dict]:
 
     entries = Entry.query.filter_by(user_id=user_id).all()
     for entry in entries:
-        month = entry.created_at.strftime("%Y-%m")
+        month = to_kst(entry.created_at).strftime("%Y-%m")
         category = entry.category
         amount = entry.amount
 
@@ -225,7 +225,7 @@ def build_calendar_month(user_id: int, month: str) -> Dict:
 def _savings_total_for_month(user_id: int, month: str) -> int:
     total = 0
     for entry in Entry.query.filter_by(user_id=user_id, category=SAVINGS_CATEGORY).all():
-        if entry.created_at.strftime("%Y-%m") == month:
+        if to_kst(entry.created_at).strftime("%Y-%m") == month:
             total += entry.amount
     return total
 
@@ -257,7 +257,7 @@ def _category_totals_for_month(user_id: int, month: str) -> Dict[str, int]:
     totals: Dict[str, int] = defaultdict(int)
     entries = Entry.query.filter_by(user_id=user_id).all()
     for entry in entries:
-        if entry.created_at.strftime("%Y-%m") != month:
+        if to_kst(entry.created_at).strftime("%Y-%m") != month:
             continue
         if entry.category in (INCOME_CATEGORY, SAVINGS_CATEGORY):
             continue
@@ -271,7 +271,7 @@ def build_category_breakdown(user_id: int, category: str, month: Optional[str] =
     totals: Dict[str, Dict[str, int]] = {}
     entries = Entry.query.filter_by(user_id=user_id, category=category).all()
     for entry in entries:
-        if entry.created_at.strftime("%Y-%m") != month:
+        if to_kst(entry.created_at).strftime("%Y-%m") != month:
             continue
         info = totals.setdefault(entry.item, {"count": 0, "amount": 0})
         info["count"] += 1
