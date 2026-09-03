@@ -9,6 +9,7 @@ from .extensions import db
 from .models import Entry, RecurringItem
 from .rules import FIXED_EXPENSE_CATEGORY, INCOME_CATEGORY
 from .text_parser import parse_amount, parse_entry
+from .timeutil import KST_OFFSET, to_kst
 
 bp = Blueprint("recurring", __name__, url_prefix="/recurring")
 
@@ -27,7 +28,7 @@ def _next_month(year_month: str) -> str:
 def sync_recurring_items(user_id: int) -> List[str]:
     """오늘 날짜 기준으로 아직 기록되지 않은 고정지출이 있으면 지금 기록하고,
     새로 기록된 항목에 대한 안내 메시지 목록을 반환합니다."""
-    today = date.today()
+    today = to_kst(datetime.now()).date()
     current_month = today.strftime("%Y-%m")
     messages: List[str] = []
 
@@ -51,7 +52,7 @@ def sync_recurring_items(user_id: int) -> List[str]:
             db.session.add(
                 Entry(
                     user_id=user_id,
-                    created_at=datetime.combine(scheduled_date, datetime.min.time()),
+                    created_at=datetime.combine(scheduled_date, datetime.min.time()) - KST_OFFSET,
                     raw_text=f"{recurring.item} {recurring.amount:,}원 ({label} 자동기록)",
                     item=recurring.item,
                     amount=recurring.amount,
