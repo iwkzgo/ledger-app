@@ -348,47 +348,40 @@
     <div class="rounded-2xl bg-white p-5 sm:p-6 shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
         {% if weekly_total > 0 %}
         <p class="mb-3 text-sm text-slate-500 dark:text-slate-400">이번 주 총 지출 <span class="font-semibold text-slate-700 dark:text-slate-200">{{ "{:,}".format(weekly_total) }}원</span></p>
-        <svg viewBox="0 0 {{ weekly_chart.width }} {{ weekly_chart.height }}" class="aspect-[320/140] w-full">
-            <polyline
-                points="{{ weekly_chart.points }}"
-                fill="none"
-                stroke="#6366f1"
-                stroke-width="2.5"
-                vector-effect="non-scaling-stroke"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            />
+        <div class="relative w-full" style="padding-bottom: {{ weekly_chart.aspect_pct }}%;">
+            <svg viewBox="0 0 {{ weekly_chart.width }} {{ weekly_chart.height }}" preserveAspectRatio="none" class="absolute inset-0 h-full w-full">
+                <polyline
+                    points="{{ weekly_chart.points }}"
+                    fill="none"
+                    stroke="#6366f1"
+                    stroke-width="2.5"
+                    vector-effect="non-scaling-stroke"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+            </svg>
             {% for dot in weekly_chart.dots %}
             {% set dot_tooltip_text %}{{ dot.label }}요일 {{ "{:,}".format(dot.amount) }}원{% if dot.categories %}
 {% for cat, amt in dot.categories.items() %}{{ cat }} {{ "{:,}".format(amt) }}원{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}{% endset %}
-            <circle
-                cx="{{ dot.x }}" cy="{{ dot.y }}"
-                r="12"
-                fill="transparent"
-                class="cursor-pointer"
+            <div
+                class="absolute flex h-6 w-6 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center"
+                style="left: {{ dot.x_pct }}%; top: {{ dot.y_pct }}%;"
                 onmouseenter='showChartTooltip(event, {{ dot_tooltip_text|trim|tojson }})'
                 onmousemove='showChartTooltip(event, {{ dot_tooltip_text|trim|tojson }})'
                 onmouseleave='hideChartTooltip()'
-            ></circle>
+            >
+                <span class="block rounded-full {{ 'h-2.5 w-2.5 bg-indigo-800' if dot.is_today else 'h-2 w-2 bg-indigo-500' }}"></span>
+            </div>
             {% endfor %}
+        </div>
+        <div class="relative mt-2 h-4 w-full text-xs">
             {% for dot in weekly_chart.dots %}
-            <circle
-                cx="{{ dot.x }}" cy="{{ dot.y }}"
-                r="{{ 4 if dot.is_today else 3 }}"
-                fill="{{ '#4338ca' if dot.is_today else '#6366f1' }}"
-                pointer-events="none"
-            />
+            <span
+                class="absolute -translate-x-1/2 {{ 'font-semibold text-indigo-700 dark:text-indigo-400' if dot.is_today else 'text-slate-400 dark:text-slate-500' }}"
+                style="left: {{ dot.x_pct }}%;"
+            >{{ dot.label }}</span>
             {% endfor %}
-            {% for dot in weekly_chart.dots %}
-            <text
-                x="{{ dot.x }}" y="{{ dot.label_y }}"
-                text-anchor="middle"
-                font-size="10"
-                font-weight="{{ '700' if dot.is_today else '400' }}"
-                fill="{{ '#4338ca' if dot.is_today else '#94a3b8' }}"
-            >{{ dot.label }}</text>
-            {% endfor %}
-        </svg>
+        </div>
         {% else %}
         <p class="py-8 text-center text-sm text-slate-400 dark:text-slate-500">이번 주는 아직 지출 내역이 없습니다.</p>
         {% endif %}

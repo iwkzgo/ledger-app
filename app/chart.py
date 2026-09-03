@@ -13,19 +13,22 @@ CIRCUMFERENCE = 2 * math.pi * RADIUS
 
 
 LINE_CHART_WIDTH = 320
-LINE_CHART_PLOT_HEIGHT = 120
+LINE_CHART_HEIGHT = 120
 LINE_CHART_PADDING = 12
-LINE_CHART_LABEL_SPACE = 20
-LINE_CHART_HEIGHT = LINE_CHART_PLOT_HEIGHT + LINE_CHART_LABEL_SPACE
 
 
 def build_line_chart(daily_totals: List[Dict]) -> Dict:
-    """요일별 지출 목록을 받아 꺾은선 그래프용 좌표를 계산합니다."""
+    """요일별 지출 목록을 받아 꺾은선 그래프용 좌표를 계산합니다.
+
+    점과 요일 라벨은 SVG 안이 아니라 일반 HTML 요소로 그려서(퍼센트 좌표로
+    위치만 잡음), 그래프 너비가 화면에 맞춰 늘어나도 글자 크기·점 크기·선
+    두께가 함께 커지지 않도록 합니다. 그래서 좌표를 %로도 같이 계산합니다.
+    """
     amounts = [day["amount"] for day in daily_totals]
     max_amount = max(amounts) if max(amounts, default=0) > 0 else 1
     count = len(daily_totals)
     usable_width = LINE_CHART_WIDTH - 2 * LINE_CHART_PADDING
-    usable_height = LINE_CHART_PLOT_HEIGHT - 2 * LINE_CHART_PADDING
+    usable_height = LINE_CHART_HEIGHT - 2 * LINE_CHART_PADDING
 
     dots = []
     for index, day in enumerate(daily_totals):
@@ -35,7 +38,8 @@ def build_line_chart(daily_totals: List[Dict]) -> Dict:
             {
                 "x": round(x, 1),
                 "y": round(y, 1),
-                "label_y": LINE_CHART_PLOT_HEIGHT + 14,
+                "x_pct": round(x / LINE_CHART_WIDTH * 100, 2),
+                "y_pct": round(y / LINE_CHART_HEIGHT * 100, 2),
                 "label": day["label"],
                 "amount": day["amount"],
                 "is_today": day["is_today"],
@@ -48,6 +52,7 @@ def build_line_chart(daily_totals: List[Dict]) -> Dict:
     return {
         "width": LINE_CHART_WIDTH,
         "height": LINE_CHART_HEIGHT,
+        "aspect_pct": round(LINE_CHART_HEIGHT / LINE_CHART_WIDTH * 100, 2),
         "points": points,
         "dots": dots,
     }
