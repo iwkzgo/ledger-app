@@ -329,7 +329,6 @@ def build_expense_forecast(user_id: int) -> Optional[Dict]:
     range_end = datetime.combine(next_month_date, datetime.min.time()) - KST_OFFSET
 
     totals: Dict[str, int] = defaultdict(int)
-    daily_totals: Dict[int, int] = defaultdict(int)
     entries = Entry.query.filter(
         Entry.user_id == user_id,
         Entry.created_at >= range_start,
@@ -339,7 +338,6 @@ def build_expense_forecast(user_id: int) -> Optional[Dict]:
         if entry.category in (INCOME_CATEGORY, SAVINGS_CATEGORY):
             continue
         totals[entry.category] += entry.amount
-        daily_totals[to_kst(entry.created_at).date().day] += entry.amount
 
     current_total = sum(totals.values())
     if current_total <= 0:
@@ -347,12 +345,6 @@ def build_expense_forecast(user_id: int) -> Optional[Dict]:
 
     daily_average = current_total / days_elapsed
     projected_total = round(daily_average * days_in_month)
-
-    running = 0
-    daily_cumulative = []
-    for day_num in range(1, days_elapsed + 1):
-        running += daily_totals.get(day_num, 0)
-        daily_cumulative.append({"day": day_num, "amount": running})
 
     total_budget = sum(b.monthly_amount for b in Budget.query.filter_by(user_id=user_id).all())
 
@@ -363,5 +355,4 @@ def build_expense_forecast(user_id: int) -> Optional[Dict]:
         "days_in_month": days_in_month,
         "total_budget": total_budget,
         "over_budget": total_budget > 0 and projected_total > total_budget,
-        "daily_cumulative": daily_cumulative,
     }

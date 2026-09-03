@@ -50,65 +50,6 @@ def build_line_chart(daily_totals: List[Dict]) -> Dict:
     }
 
 
-BURN_CHART_WIDTH = 320
-BURN_CHART_HEIGHT = 140
-BURN_CHART_PADDING = 16
-
-
-def build_burn_chart(forecast: Dict) -> Dict:
-    """이번 달 누적 지출과 예산 소진 속도를 보여주는 꺾은선 그래프용 좌표를 계산합니다."""
-    days_in_month = forecast["days_in_month"]
-    days_elapsed = forecast["days_elapsed"]
-    cumulative = forecast["daily_cumulative"]
-    total_budget = forecast["total_budget"]
-    projected_total = forecast["projected_total"]
-
-    max_value = max(
-        [point["amount"] for point in cumulative] + [total_budget, projected_total, 1]
-    )
-
-    usable_width = BURN_CHART_WIDTH - 2 * BURN_CHART_PADDING
-    usable_height = BURN_CHART_HEIGHT - 2 * BURN_CHART_PADDING
-
-    def x_for(day: int) -> float:
-        if days_in_month <= 1:
-            return BURN_CHART_PADDING
-        return BURN_CHART_PADDING + usable_width * (day - 1) / (days_in_month - 1)
-
-    def y_for(value: float) -> float:
-        return BURN_CHART_PADDING + usable_height * (1 - value / max_value)
-
-    actual_dots = [
-        {
-            "x": round(x_for(point["day"]), 1),
-            "y": round(y_for(point["amount"]), 1),
-            "day": point["day"],
-            "amount": point["amount"],
-        }
-        for point in cumulative
-    ]
-    actual_points = " ".join(f'{dot["x"]},{dot["y"]}' for dot in actual_dots)
-
-    projected_points = ""
-    if actual_dots and days_elapsed < days_in_month:
-        start = actual_dots[-1]
-        end_x = round(x_for(days_in_month), 1)
-        end_y = round(y_for(projected_total), 1)
-        projected_points = f'{start["x"]},{start["y"]} {end_x},{end_y}'
-
-    budget_y = round(y_for(total_budget), 1) if total_budget > 0 else None
-
-    return {
-        "width": BURN_CHART_WIDTH,
-        "height": BURN_CHART_HEIGHT,
-        "padding": BURN_CHART_PADDING,
-        "actual_points": actual_points,
-        "actual_dots": actual_dots,
-        "projected_points": projected_points,
-        "budget_y": budget_y,
-    }
-
-
 def build_donut_segments(categories: Dict[str, int]) -> List[Dict]:
     """카테고리별 금액을 받아 도넛(링) 차트용 SVG stroke 세그먼트 목록을 만듭니다."""
     total = sum(value for value in categories.values() if value > 0)

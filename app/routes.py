@@ -19,7 +19,7 @@ from .aggregator import (
 )
 from .categories import ensure_default_categories, get_expense_categories
 from .categorizer import categorize_item, learn_category
-from .chart import build_burn_chart, build_line_chart
+from .chart import build_line_chart
 from .extensions import db
 from .models import Budget, Category, Entry, LearnedCategory, SavingsGoal
 from .recurring import sync_recurring_items
@@ -75,7 +75,6 @@ def index():
         .all()
     )
     weekly_pattern = build_weekly_pattern(current_user.id)
-    expense_forecast = build_expense_forecast(current_user.id)
     return render_template(
         "index.html",
         summary=build_monthly_summary(current_user.id),
@@ -85,8 +84,7 @@ def index():
         savings_goal=build_savings_goal_status(current_user.id, current_month()),
         weekly_chart=build_line_chart(weekly_pattern),
         weekly_total=sum(day["amount"] for day in weekly_pattern),
-        expense_forecast=expense_forecast,
-        burn_chart=build_burn_chart(expense_forecast) if expense_forecast else None,
+        expense_forecast=build_expense_forecast(current_user.id),
         today_summary=build_today_summary(current_user.id),
     )
 
