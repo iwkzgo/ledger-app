@@ -51,4 +51,10 @@ def create_app(config_class=Config):
         # /static/sw.js가 아니라 루트에서 내려줘야 사이트 전체(/)를 제어할 수 있습니다.
         return send_from_directory(app.static_folder, "sw.js", mimetype="application/javascript")
 
+    @app.route("/favicon.ico")
+    def favicon():
+        # 브라우저/OS가 <link rel="icon">과 별개로 루트의 /favicon.ico를
+        # 직접 요청하는 경우가 있어서, 정적 파일 경로 대신 루트에서도 내려줍니다.
+        return send_from_directory(app.static_folder, "favicon.ico", mimetype="image/vnd.microsoft.icon")
+
     return app
