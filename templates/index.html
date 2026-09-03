@@ -235,6 +235,7 @@
                     stroke-dashoffset="{{ slice.dashoffset }}"
                     class="cursor-pointer"
                     onmouseenter='showChartTooltip(event, {{ tooltip_text|trim|tojson }})'
+                    onmousemove='showChartTooltip(event, {{ tooltip_text|trim|tojson }})'
                     onmouseleave='hideChartTooltip()'
                 ></circle>
                 {% endfor %}
@@ -274,6 +275,7 @@
                         class="cursor-pointer"
                         onclick='showItemDonut({{ month|tojson }}, {{ slice.key|tojson }})'
                         onmouseenter='showChartTooltip(event, {{ tooltip_text|trim|tojson }})'
+                        onmousemove='showChartTooltip(event, {{ tooltip_text|trim|tojson }})'
                         onmouseleave='hideChartTooltip()'
                     ></circle>
                     {% endfor %}
@@ -315,6 +317,7 @@
                                 stroke-dashoffset="{{ item_slice.dashoffset }}"
                                 class="cursor-pointer"
                                 onmouseenter='showChartTooltip(event, {{ item_tooltip_text|trim|tojson }})'
+                                onmousemove='showChartTooltip(event, {{ item_tooltip_text|trim|tojson }})'
                                 onmouseleave='hideChartTooltip()'
                             ></circle>
                             {% endfor %}
@@ -364,6 +367,7 @@
                 fill="transparent"
                 class="cursor-pointer"
                 onmouseenter='showChartTooltip(event, {{ dot_tooltip_text|trim|tojson }})'
+                onmousemove='showChartTooltip(event, {{ dot_tooltip_text|trim|tojson }})'
                 onmouseleave='hideChartTooltip()'
             ></circle>
             {% endfor %}
@@ -537,9 +541,8 @@
         var tooltip = document.getElementById('chart-tooltip');
         if (!tooltip) return;
         tooltip.textContent = text;
-        var rect = event.currentTarget.getBoundingClientRect();
-        tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-        tooltip.style.top = rect.top + 'px';
+        tooltip.style.left = event.clientX + 'px';
+        tooltip.style.top = (event.clientY - 12) + 'px';
         tooltip.classList.remove('hidden');
     }
 
