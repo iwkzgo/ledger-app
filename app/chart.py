@@ -52,7 +52,6 @@ def build_line_chart(daily_totals: List[Dict]) -> Dict:
     return {
         "width": LINE_CHART_WIDTH,
         "height": LINE_CHART_HEIGHT,
-        "aspect_pct": round(LINE_CHART_HEIGHT / LINE_CHART_WIDTH * 100, 2),
         "points": points,
         "dots": dots,
     }

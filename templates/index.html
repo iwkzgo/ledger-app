@@ -348,7 +348,7 @@
     <div class="rounded-2xl bg-white p-5 sm:p-6 shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
         {% if weekly_total > 0 %}
         <p class="mb-3 text-sm text-slate-500 dark:text-slate-400">이번 주 총 지출 <span class="font-semibold text-slate-700 dark:text-slate-200">{{ "{:,}".format(weekly_total) }}원</span></p>
-        <div class="relative w-full" style="padding-bottom: {{ weekly_chart.aspect_pct }}%;">
+        <div class="relative aspect-[320/140] max-h-48 w-full">
             <svg viewBox="0 0 {{ weekly_chart.width }} {{ weekly_chart.height }}" preserveAspectRatio="none" class="absolute inset-0 h-full w-full">
                 <polyline
                     points="{{ weekly_chart.points }}"
