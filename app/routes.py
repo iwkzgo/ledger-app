@@ -193,10 +193,16 @@ def edit_entry(entry_id):
         amount_raw = request.form.get("amount", "").strip()
         category = request.form.get("category", "").strip()
         memo = request.form.get("memo", "").strip()
+        date_raw = request.form.get("date", "").strip()
         try:
             amount = int(amount_raw)
         except ValueError:
             amount = None
+
+        try:
+            new_date = datetime.strptime(date_raw, "%Y-%m-%d").date()
+        except ValueError:
+            new_date = None
 
         if (
             not item
@@ -205,8 +211,9 @@ def edit_entry(entry_id):
             or category not in choices
             or len(item) > 255
             or len(memo) > 255
+            or new_date is None
         ):
-            flash("항목, 금액, 카테고리를 올바르게 입력해주세요.", "error")
+            flash("항목, 금액, 카테고리, 날짜를 올바르게 입력해주세요.", "error")
             return render_template(
                 "edit_entry.html",
                 entry=entry,
@@ -215,8 +222,14 @@ def edit_entry(entry_id):
                 form_amount=amount_raw,
                 form_category=category or entry.category,
                 form_memo=memo,
+                form_date=date_raw or to_kst(entry.created_at).strftime("%Y-%m-%d"),
                 category_choices=choices,
             )
+
+        # 시각은 그대로 두고 날짜만 바꿉니다. KST 기준 시각에 새 날짜를 적용한 뒤
+        # 다시 UTC로 변환해서 저장합니다.
+        kst_created = to_kst(entry.created_at)
+        entry.created_at = datetime.combine(new_date, kst_created.time()) - KST_OFFSET
 
         entry.item = item
         entry.amount = amount
@@ -235,6 +248,7 @@ def edit_entry(entry_id):
         form_amount=entry.amount,
         form_category=entry.category,
         form_memo=entry.memo or "",
+        form_date=to_kst(entry.created_at).strftime("%Y-%m-%d"),
         category_choices=choices,
     )
 
